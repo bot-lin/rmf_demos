@@ -23,18 +23,49 @@
 
 import requests
 from urllib.error import HTTPError
+import paho.mqtt.client as mqtt
+import math
+import json
+
+
+class MQTTClient:
+    def __init__(self, name, config):
+        self.name = name
+        self.connected = False
+
+        def _on_connect(client, userdata, flags, rc):
+            if rc == 0:
+                self.connected = True
+
+        self.client = mqtt.Client(self.name)
+        self.client.username_pw_set(config['user'], config['password'])
+        self.client.on_connect = _on_connect
+        self.client.connect(config['url'])
+        self.client.loop_start()
 
 
 class RobotAPI:
     # The constructor below accepts parameters typically required to submit
     # http requests. Users should modify the constructor as per the
     # requirements of their robot's API
-    def __init__(self, prefix: str, user: str, password: str):
+    def __init__(self, prefix: str, user: str, password: str, mqtt_config=None):
         self.prefix = prefix
         self.user = user
         self.password = password
         self.timeout = 5.0
         self.debug = False
+
+        # Set up MQTT with Orio for beacon signalling
+        self.mqtt_client = None
+        if mqtt_config:
+            self.mqtt_client = MQTTClient('MiR_Fleet', mqtt_config)
+            # Set up beacons
+            self.beacons = {}
+            assert 'beacons' in mqtt_config
+            self.beacon_radius = mqtt_config['beacon_alert_radius']
+            # Map beacon to its location and robot within vicinity if any
+            for id, loc in mqtt_config['beacons'].items():
+                self.beacons[id] = [loc, None]
 
     def check_connection(self):
         ''' Return True if connection to the robot API server is successful'''
@@ -57,6 +88,7 @@ class RobotAPI:
             x = position['x']
             y = position['y']
             angle = position['yaw']
+            self.update_beacon(robot_name, [x, y])
             return [x, y, angle]
 
         print(f'No response received for {robot_name}')
@@ -241,3 +273,48 @@ class RobotAPI:
         except Exception as err:
             print(f'Other error: {err}')
         return None
+
+    # -----------------------------------------------------------
+    # SPECIFIC TO BEACON SIGNALLING
+    # -----------------------------------------------------------
+    def update_beacon(self, robot_name, robot_pos):
+
+        if self.mqtt_client is None:
+            # If no MQTT client is set up, means there's no beacon signalling system
+            return
+
+        def _beacon_on(beacon_id):
+            # Make sure topic is the same as the beacon config
+            mqtt_topic = f'cgh/{beacon_id}/toggle_beacon_topic'
+            msg = {'id': beacon_id,
+                   'toggle': 1}
+            json_msg = json.dumps(msg)
+            self.mqtt_client.client.publish(mqtt_topic, json_msg)
+
+        def _beacon_off(beacon_id):
+            # Make sure topic is the same as the beacon config
+            mqtt_topic = f'cgh/{beacon_id}/toggle_beacon_topic'
+            msg = {'id': beacon_id,
+                   'toggle': 0}
+            json_msg = json.dumps(msg)
+            self.mqtt_client.client.publish(mqtt_topic, json_msg)
+
+        def _dist(A, B):
+            assert(len(A) > 1)
+            assert(len(B) > 1)
+            return math.sqrt((A[0] - B[0])**2 + (A[1] - B[1])**2)
+
+        for beacon_id, beacon_data in self.beacons.items():
+            beacon_loc = beacon_data[0]
+            current_robot = beacon_data[1]
+            # Check if this robot was registered to be near a beacon
+            if current_robot == robot_name:
+                # If robot was near a beacon but not anymore, turn beacon off
+                if _dist(beacon_loc, robot_pos) > self.beacon_radius:
+                    _beacon_off(beacon_id)
+                    self.beacons[beacon_id][1] = None
+
+            # If a robot is within radius, turn beacon on
+            if _dist(beacon_loc, robot_pos) < self.beacon_radius:
+                _beacon_on(beacon_id)
+                self.beacons[beacon_id][1] = robot_name

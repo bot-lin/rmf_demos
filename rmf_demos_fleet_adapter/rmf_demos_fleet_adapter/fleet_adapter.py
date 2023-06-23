@@ -200,10 +200,14 @@ def initialize_fleet(config_yaml, nav_graph_path, node, use_sim_time):
     # Initialize robot API for this fleet
     prefix = 'http://' + fleet_config['fleet_manager']['ip'] + \
              ':' + str(fleet_config['fleet_manager']['port'])
+    mqtt_config = None
+    if 'mqtt' in config_yaml:
+        mqtt_config = config_yaml['mqtt']
     api = RobotAPI(
         prefix,
         fleet_config['fleet_manager']['user'],
-        fleet_config['fleet_manager']['password'])
+        fleet_config['fleet_manager']['password'],
+        mqtt_config)
 
     # Initialize robots for this fleet
     robots = {}
