@@ -198,7 +198,7 @@ class FleetManager(Node):
                 response['data'] = self.get_robot_state(state, robot_name)
             response['success'] = True
             return response
-dwd
+
         @app.post('/open-rmf/rmf_demos_fm/navigate/',
                   response_model=Response)
         async def navigate(robot_name: str, cmd_id: int, dest: Request):
