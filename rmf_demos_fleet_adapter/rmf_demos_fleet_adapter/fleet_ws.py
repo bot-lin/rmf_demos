@@ -28,7 +28,7 @@ class WebSocketNode(Node):
                 data_ros.name = 'robot_1'
                 data_ros.model = 'diff'
                 data_ros.task_id = ''
-                data_ros.seq = seq
+                data_ros.seq = seq 
                 data_ros.mode.mode = 0
                 data_ros.battery_percent = data_dict['battery']
 
