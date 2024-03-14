@@ -30,7 +30,7 @@ class WebSocketNode(Node):
                 data_ros.task_id = ''
                 data_ros.seq = seq 
                 data_ros.mode.mode = 0
-                data_ros.battery_percent = data_dict['battery']
+                data_ros.battery_percent = float(data_dict['battery'])
 
                 self.get_logger().info(f"Received: {data_dict}")
                 msg = String()
