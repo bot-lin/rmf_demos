@@ -10,6 +10,7 @@ class WebSocketNode(Node):
     def __init__(self):
         super().__init__('websocket_node')
         self.publisher_ = self.create_publisher(String, 'topic', 10)
+        self.robot_state_publisher_ = self.create_publisher(RobotState, 'robot_state', 10)
         self.websockets = []
 
     async def connect_to_websocket(self, uri):
@@ -36,6 +37,7 @@ class WebSocketNode(Node):
                 data_ros.location.yaw = float(data_dict['pose']['pyr']['yaw'])
                 data_ros.location.level_name = 'L1'
                 data_ros.location.t = self.get_clock().now().to_msg()
+                self.robot_state_publisher_.publish(data_ros)
 
                 msg = String()
                 msg.data = f"{message}"
