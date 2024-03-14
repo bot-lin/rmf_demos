@@ -33,7 +33,7 @@ class WebSocketNode(Node):
                 data_ros.battery_percent = float(data_dict['battery'])
                 data_ros.location.x = float(data_dict['pose']['position']['x'])
                 data_ros.location.y = float(data_dict['pose']['position']['y'])
-                data_ros.location.yaw = float(data_dict['pose']['pyr']['z'])
+                data_ros.location.yaw = float(data_dict['pose']['pyr']['yaw'])
                 data_ros.location.level_name = 'L1'
                 data_ros.location.t = self.get_clock().now().to_msg()
 
