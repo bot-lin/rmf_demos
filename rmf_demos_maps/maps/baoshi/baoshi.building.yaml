@@ -15,7 +15,7 @@ crowd_sim:
 graphs:
   {}
 levels:
-  office:
+  L1:
     drawing:
       filename: baoshi.png
     elevation: 0
