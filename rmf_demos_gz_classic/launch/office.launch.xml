@@ -13,7 +13,7 @@
 
   <!-- Simulation launch -->
   <include file="$(find-pkg-share rmf_demos_gz_classic)/simulation.launch.xml">
-    <arg name="map_name" value="baoshi" />
+    <arg name="map_name" value="office" />
     <arg name="gazebo_version" value="$(var gazebo_version)" />
   </include>
 
