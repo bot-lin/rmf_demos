@@ -1,13 +1,13 @@
 coordinate_system: reference_image
 crowd_sim:
   agent_groups:
-    - {agents_name: [robot1], agents_number: 1, group_id: 0, profile_selector: external_agent, state_selector: external_static, x: 0, y: 0}
+    - {agents_name: [], agents_number: 0, group_id: 0, profile_selector: external_agent, state_selector: external_static, x: 0, y: 0}
   agent_profiles:
     - {ORCA_tau: 1, ORCA_tauObst: 0.40000000000000002, class: 1, max_accel: 0, max_angle_vel: 0, max_neighbors: 10, max_speed: 0, name: external_agent, neighbor_dist: 5, obstacle_set: 1, pref_speed: 0, r: 0.25}
   enable: 0
   goal_sets: []
   model_types: []
-  obstacle_set: {class: 1, file_name: office_navmesh.nav, type: nav_mesh}
+  obstacle_set: {class: 1, file_name: L1_navmesh.nav, type: nav_mesh}
   states:
     - {final: 1, goal_set: -1, name: external_static, navmesh_file_name: ""}
   transitions: []
@@ -16,28 +16,68 @@ graphs:
   {}
 levels:
   L1:
-    drawing:
-      filename: baoshi.png
+    doors:
+      - [23, 24, {motion_axis: [1, start], motion_degrees: [3, 90], motion_direction: [2, 1], name: [1, door1], plugin: [1, normal], right_left_ratio: [3, 1], type: [1, double_sliding]}]
     elevation: 0
-    lanes:
-      - [0, 1, {bidirectional: [4, true], demo_mock_floor_name: [1, ""], demo_mock_lift_name: [1, ""], graph_idx: [2, 0], mutex: [1, ""], orientation: [1, ""], speed_limit: [3, 0]}]
-      - [1, 2, {bidirectional: [4, true], demo_mock_floor_name: [1, ""], demo_mock_lift_name: [1, ""], graph_idx: [2, 0], mutex: [1, ""], orientation: [1, ""], speed_limit: [3, 0]}]
-      - [2, 3, {bidirectional: [4, true], demo_mock_floor_name: [1, ""], demo_mock_lift_name: [1, ""], graph_idx: [2, 0], mutex: [1, ""], orientation: [1, ""], speed_limit: [3, 0]}]
-      - [3, 4, {bidirectional: [4, true], demo_mock_floor_name: [1, ""], demo_mock_lift_name: [1, ""], graph_idx: [2, 0], mutex: [1, ""], orientation: [1, ""], speed_limit: [3, 0]}]
-      - [4, 5, {bidirectional: [4, true], demo_mock_floor_name: [1, ""], demo_mock_lift_name: [1, ""], graph_idx: [2, 0], mutex: [1, ""], orientation: [1, ""], speed_limit: [3, 0]}]
-      - [5, 6, {bidirectional: [4, true], demo_mock_floor_name: [1, ""], demo_mock_lift_name: [1, ""], graph_idx: [2, 0], mutex: [1, ""], orientation: [1, ""], speed_limit: [3, 0]}]
-      - [6, 7, {bidirectional: [4, true], demo_mock_floor_name: [1, ""], demo_mock_lift_name: [1, ""], graph_idx: [2, 0], mutex: [1, ""], orientation: [1, ""], speed_limit: [3, 0]}]
-      - [7, 3, {bidirectional: [4, true], demo_mock_floor_name: [1, ""], demo_mock_lift_name: [1, ""], graph_idx: [2, 0], mutex: [1, ""], orientation: [1, ""], speed_limit: [3, 0]}]
+    floors:
+      - parameters: {ceiling_scale: [3, 1], ceiling_texture: [1, blue_linoleum], indoor: [2, 0], texture_name: [1, blue_linoleum], texture_rotation: [3, 0], texture_scale: [3, 1]}
+        vertices: [5, 11, 10, 9, 7, 6]
     layers:
-      {}
+      L1:
+        color: [1, 0, 0, 0.5]
+        filename: baoshi.png
+        transform:
+          scale: 0.050000000000000003
+          translation_x: 0
+          translation_y: 0
+          yaw: 0
+        visible: true
+    measurements:
+      - [1, 2, {distance: [3, 21.899999999999999]}]
     vertices:
-      - [184.63800000000001, 139.69499999999999, 0, dock]
-      - [244.03399999999999, 140.108, 0, ""]
-      - [245.19200000000001, 100.49299999999999, 0, desk]
-      - [241.94900000000001, 207.291, 0, ""]
-      - [124.95699999999999, 206.596, 0, ""]
-      - [77.465999999999994, 248.52799999999999, 0, door]
-      - [130.054, 240.65100000000001, 0, ""]
-      - [241.71700000000001, 241.809, 0, ""]
+      - [3.2759999999999998, 2.3170000000000002, 0, ""]
+      - [1.4199999999999999, 392.91199999999998, 0, ""]
+      - [439.34899999999999, 393.90899999999999, 0, ""]
+      - [326.625, 390.916, 0, ""]
+      - [293.20600000000002, 392.41300000000001, 0, ""]
+      - [164.59700000000001, 1.496, 0, ""]
+      - [169.08600000000001, 175.072, 0, ""]
+      - [41.399000000000001, 172.07900000000001, 0, ""]
+      - [38.905000000000001, 172.578, 0, ""]
+      - [39.902000000000001, 351.14100000000002, 0, ""]
+      - [440.42200000000003, 354.13299999999998, 0, ""]
+      - [440.42200000000003, 1.496, 0, ""]
+      - [164.59700000000001, 12.968, 0, ""]
+      - [170.583, 14.962999999999999, 0, ""]
+      - [176.56800000000001, 2.9929999999999999, 0, ""]
+      - [191.03299999999999, 16.957999999999998, 0, ""]
+      - [214.97399999999999, 2.4940000000000002, 0, ""]
+      - [236.91999999999999, 18.954000000000001, 0, ""]
+      - [252.38200000000001, 1.496, 0, ""]
+      - [274.827, 15.462, 0, ""]
+      - [286.798, 1.9950000000000001, 0, ""]
+      - [440.42200000000003, 351.14100000000002, 0, ""]
+      - [40.401000000000003, 290.78800000000001, 0, ""]
+      - [42.396000000000001, 292.28500000000003, 0, ""]
+      - [41.896999999999998, 230.43600000000001, 0, ""]
+      - [71.325000000000003, 255.375, 0, ""]
+    walls:
+      - [6, 12, {alpha: [3, 1], texture_height: [3, 2.5], texture_name: [1, default], texture_scale: [3, 1], texture_width: [3, 1]}]
+      - [12, 13, {alpha: [3, 1], texture_height: [3, 2.5], texture_name: [1, default], texture_scale: [3, 1], texture_width: [3, 1]}]
+      - [13, 14, {alpha: [3, 1], texture_height: [3, 2.5], texture_name: [1, default], texture_scale: [3, 1], texture_width: [3, 1]}]
+      - [14, 15, {alpha: [3, 1], texture_height: [3, 2.5], texture_name: [1, default], texture_scale: [3, 1], texture_width: [3, 1]}]
+      - [15, 16, {alpha: [3, 1], texture_height: [3, 2.5], texture_name: [1, default], texture_scale: [3, 1], texture_width: [3, 1]}]
+      - [16, 17, {alpha: [3, 1], texture_height: [3, 2.5], texture_name: [1, default], texture_scale: [3, 1], texture_width: [3, 1]}]
+      - [17, 18, {alpha: [3, 1], texture_height: [3, 2.5], texture_name: [1, default], texture_scale: [3, 1], texture_width: [3, 1]}]
+      - [18, 19, {alpha: [3, 1], texture_height: [3, 2.5], texture_name: [1, default], texture_scale: [3, 1], texture_width: [3, 1]}]
+      - [19, 20, {alpha: [3, 1], texture_height: [3, 2.5], texture_name: [1, default], texture_scale: [3, 1], texture_width: [3, 1]}]
+      - [20, 11, {alpha: [3, 1], texture_height: [3, 2.5], texture_name: [1, default], texture_scale: [3, 1], texture_width: [3, 1]}]
+      - [11, 21, {alpha: [3, 1], texture_height: [3, 2.5], texture_name: [1, default], texture_scale: [3, 1], texture_width: [3, 1]}]
+      - [21, 9, {alpha: [3, 1], texture_height: [3, 2.5], texture_name: [1, default], texture_scale: [3, 1], texture_width: [3, 1]}]
+      - [9, 22, {alpha: [3, 1], texture_height: [3, 2.5], texture_name: [1, default], texture_scale: [3, 1], texture_width: [3, 1]}]
+      - [22, 8, {alpha: [3, 1], texture_height: [3, 2.5], texture_name: [1, default], texture_scale: [3, 1], texture_width: [3, 1]}]
+      - [8, 6, {alpha: [3, 1], texture_height: [3, 2.5], texture_name: [1, default], texture_scale: [3, 1], texture_width: [3, 1]}]
+    x_meters: 45.657282764406837
+    y_meters: 45.657282764406837
 lifts: {}
 name: baoshi
