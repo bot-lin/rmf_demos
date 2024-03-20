@@ -22,6 +22,15 @@ levels:
     floors:
       - parameters: {ceiling_scale: [3, 1], ceiling_texture: [1, blue_linoleum], indoor: [2, 0], texture_name: [1, blue_linoleum], texture_rotation: [3, 0], texture_scale: [3, 1]}
         vertices: [5, 11, 10, 9, 7, 6]
+    lanes:
+      - [26, 27, {bidirectional: [4, true], demo_mock_floor_name: [1, ""], demo_mock_lift_name: [1, ""], graph_idx: [2, 0], mutex: [1, ""], orientation: [1, ""], speed_limit: [3, 0]}]
+      - [27, 28, {bidirectional: [4, true], demo_mock_floor_name: [1, ""], demo_mock_lift_name: [1, ""], graph_idx: [2, 0], mutex: [1, ""], orientation: [1, ""], speed_limit: [3, 0]}]
+      - [28, 29, {bidirectional: [4, true], demo_mock_floor_name: [1, ""], demo_mock_lift_name: [1, ""], graph_idx: [2, 0], mutex: [1, ""], orientation: [1, ""], speed_limit: [3, 0]}]
+      - [29, 30, {bidirectional: [4, true], demo_mock_floor_name: [1, ""], demo_mock_lift_name: [1, ""], graph_idx: [2, 0], mutex: [1, ""], orientation: [1, ""], speed_limit: [3, 0]}]
+      - [30, 31, {bidirectional: [4, true], demo_mock_floor_name: [1, ""], demo_mock_lift_name: [1, ""], graph_idx: [2, 0], mutex: [1, ""], orientation: [1, ""], speed_limit: [3, 0]}]
+      - [27, 32, {bidirectional: [4, true], demo_mock_floor_name: [1, ""], demo_mock_lift_name: [1, ""], graph_idx: [2, 0], mutex: [1, ""], orientation: [1, ""], speed_limit: [3, 0]}]
+      - [32, 33, {bidirectional: [4, true], demo_mock_floor_name: [1, ""], demo_mock_lift_name: [1, ""], graph_idx: [2, 0], mutex: [1, ""], orientation: [1, ""], speed_limit: [3, 0]}]
+      - [33, 34, {bidirectional: [4, true], demo_mock_floor_name: [1, ""], demo_mock_lift_name: [1, ""], graph_idx: [2, 0], mutex: [1, ""], orientation: [1, ""], speed_limit: [3, 0]}]
     layers:
       L1:
         color: [1, 0, 0, 0.5]
@@ -34,6 +43,12 @@ levels:
         visible: true
     measurements:
       - [1, 2, {distance: [3, 21.899999999999999]}]
+    models:
+      - {dispensable: false, model_name: OpenRobotics/Table, name: OpenRobotics/Table, static: true, x: 265.74200000000002, y: 67.739000000000004, yaw: 0.0055999999999999999, z: 0}
+      - {dispensable: false, model_name: OpenRobotics/Table, name: OpenRobotics/Table, static: true, x: 303.35599999999999, y: 67.739000000000004, yaw: -0.0047000000000000002, z: 0}
+      - {dispensable: false, model_name: OpenRobotics/Table, name: OpenRobotics/Table, static: true, x: 342.642, y: 70.247, yaw: -0.0050000000000000001, z: 0}
+      - {dispensable: false, model_name: OpenRobotics/Table, name: OpenRobotics/Table, static: true, x: 291.28699999999998, y: 139.65799999999999, yaw: 1.5708, z: 0}
+      - {dispensable: false, model_name: OpenRobotics/Table, name: OpenRobotics/Table, static: true, x: 327.19900000000001, y: 139.65799999999999, yaw: 1.5708, z: 0}
     vertices:
       - [3.2759999999999998, 2.3170000000000002, 0, ""]
       - [1.4199999999999999, 392.91199999999998, 0, ""]
@@ -61,6 +76,15 @@ levels:
       - [42.396000000000001, 292.28500000000003, 0, ""]
       - [41.896999999999998, 230.43600000000001, 0, ""]
       - [71.325000000000003, 255.375, 0, ""]
+      - [178.309, 138.952, 0, dock, {is_charger: [4, true], spawn_robot_name: [1, tinyrobot1], spawn_robot_type: [1, TinyRobot]}]
+      - [214.148, 138.952, 0, ""]
+      - [239.11799999999999, 94.006, 0, desk]
+      - [242.34899999999999, 229.72499999999999, 0, ""]
+      - [102.402, 234.06299999999999, 0, ""]
+      - [70.834999999999994, 308.33800000000002, 0, door]
+      - [213.81399999999999, 194.13999999999999, 0, ""]
+      - [101.473, 198.78200000000001, 0, ""]
+      - [101.473, 227.56399999999999, 0, ""]
     walls:
       - [6, 12, {alpha: [3, 1], texture_height: [3, 2.5], texture_name: [1, default], texture_scale: [3, 1], texture_width: [3, 1]}]
       - [12, 13, {alpha: [3, 1], texture_height: [3, 2.5], texture_name: [1, default], texture_scale: [3, 1], texture_width: [3, 1]}]
