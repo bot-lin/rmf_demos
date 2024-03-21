@@ -26,7 +26,7 @@ class WebSocketNode(Node):
                 message = await websocket.recv()
                 data_dict = json.loads(message)
                 data_ros = RobotState()
-                data_ros.name = 'robot_1'
+                data_ros.name = 'tinyrobot1'
                 data_ros.model = 'diff'
                 data_ros.task_id = ''
                 data_ros.seq = seq 
