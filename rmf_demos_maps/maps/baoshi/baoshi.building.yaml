@@ -1,3 +1,4 @@
+coordinate_system: reference_image
 crowd_sim:
   agent_groups:
     - {agents_name: [robot1], agents_number: 1, group_id: 0, profile_selector: external_agent, state_selector: external_static, x: 0, y: 0}
@@ -35,7 +36,7 @@ levels:
     layers:
       {}
     measurements:
-      - [35, 36, {distance: [3, 1]}]
+      - [35, 36, {distance: [3, 21.9876]}]
     vertices:
       - [40.850999999999999, 173.01599999999999, 0, ""]
       - [173.01599999999999, 173.01599999999999, 0, ""]
