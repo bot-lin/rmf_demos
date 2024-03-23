@@ -31,9 +31,10 @@ class WebSocketNode(Node):
                 data_ros.task_id = ''
                 data_ros.seq = seq 
                 data_ros.mode.mode = 0
+                x, y = self.find_map_in_b(float(data_dict['pose']['position']['x']), float(data_dict['pose']['position']['y']))
                 data_ros.battery_percent = float(data_dict['battery'])
-                data_ros.location.x = float(data_dict['pose']['position']['x'])
-                data_ros.location.y = float(data_dict['pose']['position']['y'])
+                data_ros.location.x = x
+                data_ros.location.y = y
                 data_ros.location.yaw = float(data_dict['pose']['pyr']['yaw'])
                 data_ros.location.level_name = 'L1'
                 data_ros.location.t = self.get_clock().now().to_msg()
@@ -46,6 +47,16 @@ class WebSocketNode(Node):
     def run(self, uris):
         for uri in uris:
             asyncio.get_event_loop().run_until_complete(self.start(uri))
+
+    def find_map_in_b(self, given_x, given_y, resolution=0.05, origin_x=-9.11, origin_y=-18.8, height=514):
+        temp_x = given_x - origin_x
+        temp_y = given_y - origin_y
+        map_x = int(temp_x / resolution)
+        map_y = int(temp_y / resolution)
+        temp_y = height - map_y
+        x = map_x * resolution
+        y = - temp_y * resolution
+        return x, y
 
 def main(args=None):
     rclpy.init(args=args)
