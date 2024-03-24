@@ -48,7 +48,7 @@ class WebSocketNode(Node):
         for uri in uris:
             asyncio.get_event_loop().run_until_complete(self.start(uri))
 
-    def find_map_in_b(self, given_x, given_y, resolution=0.05, origin_x=-9.11, origin_y=-18.8, height=514):
+    def find_map_in_b(self, given_x, given_y, resolution=0.05, origin_x=-24.5, origin_y=-28.9, height=896):
         temp_x = given_x - origin_x
         temp_y = given_y - origin_y
         map_x = int(temp_x / resolution)
