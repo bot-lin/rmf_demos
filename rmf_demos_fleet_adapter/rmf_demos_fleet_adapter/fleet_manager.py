@@ -279,7 +279,8 @@ class FleetManager(Node):
                 "task_id": str(cmd_id),
                 "inflation_radius": 1.1
             }
-            response = requests.post('http://10.6.75.222:1234/go_to', json=post_data)
+            http_response = requests.post('http://10.6.75.222:1234/go_to', json=post_data)
+            self.get_logger().info(http_response.text)
             self.path_pub.publish(path_request)
 
             if self.debug:
