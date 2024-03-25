@@ -259,6 +259,7 @@ class FleetManager(Node):
             path_request.robot_name = robot_name
             path_request.path.append(target_loc)
             path_request.task_id = str(cmd_id)
+            self.get_logger().info(f'navigation: path_request.task_id: {path_request.task_id}')
             self.path_pub.publish(path_request)
 
             if self.debug:
@@ -286,6 +287,7 @@ class FleetManager(Node):
             path_request.path.append(robot.state.location)
 
             path_request.task_id = str(cmd_id)
+            self.get_logger().info(f'stop robot: path_request.task_id: {path_request.task_id}')
             self.path_pub.publish(path_request)
 
             if self.debug:
@@ -345,6 +347,7 @@ class FleetManager(Node):
             path_request.fleet_name = self.fleet_name
             path_request.robot_name = robot_name
             path_request.task_id = str(cmd_id)
+            self.get_logger().info(f'action paths: path_request.task_id: {path_request.task_id}')
             self.path_pub.publish(path_request)
 
             if self.debug:
@@ -389,7 +392,7 @@ class FleetManager(Node):
                             f'{robot.last_path_request.task_id}, '
                             f'because it is currently following {msg.task_id}'
                         )
-                    self.path_pub.publish(robot.last_path_request)
+                    # self.path_pub.publish(robot.last_path_request)
                 return
 
             robot.state = msg
