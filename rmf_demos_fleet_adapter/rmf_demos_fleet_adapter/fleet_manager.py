@@ -45,6 +45,7 @@ from rmf_fleet_msgs.msg import RobotState
 import socketio
 import uvicorn
 import yaml
+import requests
 
 app = FastAPI()
 
@@ -260,6 +261,25 @@ class FleetManager(Node):
             path_request.path.append(target_loc)
             path_request.task_id = str(cmd_id)
             self.get_logger().info(f'navigation: path_request.task_id: {path_request.task_id}')
+            post_data = {
+                "pose": {
+                    "position": {
+                        "x": target_x,
+                        "y": target_y
+                    },
+                    "pyr": {
+                        "yaw": target_yaw
+                    }
+                },
+                "use_pyr": True,
+                "precision_xy": 0.1,
+                "precision_yaw": 0.1,
+                "is_reverse": False,
+                "nav_type": "auto",
+                "task_id": msg.task_id,
+                "inflation_radius": 1.1
+            }
+            response = requests.post('http://10.6.75.222:1234/go_to', json=post_data)
             self.path_pub.publish(path_request)
 
             if self.debug:

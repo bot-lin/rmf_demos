@@ -14,7 +14,7 @@ class WebSocketNode(Node):
         super().__init__('websocket_node')
         self.publisher_ = self.create_publisher(String, 'topic', 10)
         self.robot_state_publisher_ = self.create_publisher(RobotState, 'robot_state', 10)
-        self.create_subscription(PathRequest, 'robot_path_requests', self.task_callback, 10)
+        # self.create_subscription(PathRequest, 'robot_path_requests', self.task_callback, 10)
         self.websockets = []
 
     async def connect_to_websocket(self, uri):
