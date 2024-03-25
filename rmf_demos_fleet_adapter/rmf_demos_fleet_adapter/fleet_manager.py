@@ -269,6 +269,12 @@ class FleetManager(Node):
                     },
                     "pyr": {
                         "yaw": target_yaw
+                    },
+                    "orientation": {
+                        "x": 0,
+                        "y": 0,
+                        "z": 0,
+                        "w": 1
                     }
                 },
                 "use_pyr": True,
