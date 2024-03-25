@@ -85,7 +85,7 @@ class WebSocketNode(Node):
             "inflation_radius": 1.1
         }
         response = requests.post('http://10.6.75.222:1234/go_to', json=post_data)
-        print(response.text)
+        self.get_logger().info(response.text)
                       
 
 
