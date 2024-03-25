@@ -4,13 +4,17 @@ import rclpy
 from rclpy.node import Node
 from std_msgs.msg import String
 from rmf_fleet_msgs.msg import RobotState, RobotMode, Location
+from rmf_fleet_msgs.msg import PathRequest
+from rclpy.qos import qos_profile_system_default
+
 import json
-    
+import requests
 class WebSocketNode(Node):
     def __init__(self):
         super().__init__('websocket_node')
         self.publisher_ = self.create_publisher(String, 'topic', 10)
         self.robot_state_publisher_ = self.create_publisher(RobotState, 'robot_state', 10)
+        task_subscription = self.create_subscription(PathRequest, 'robot_path_requests', self.task_callback, qos_profile=qos_profile_system_default)
         self.websockets = []
 
     async def connect_to_websocket(self, uri):
@@ -57,6 +61,33 @@ class WebSocketNode(Node):
         x = map_x * resolution
         y = - temp_y * resolution
         return x, y
+    
+    def task_callback(self, msg):
+        x = msg.path[0].x
+        y = msg.path[0].y
+        yaw = msg.path[0].yaw
+        post_data = {
+            "pose": {
+                "position": {
+                    "x": x,
+                    "y": y
+                },
+                "pyr": {
+                    "yaw": yaw
+                }
+            },
+            "use_pyr": True,
+            "precision_xy": 0.1,
+            "precision_yaw": 0.1,
+            "is_reverse": False,
+            "nav_type": "auto",
+            "task_id": msg.task_id,
+            "inflation_radius": 1.1
+        }
+        response = requests.post('http://0.0.0.0:1234/go_to', json=post_data)
+        print(response.text)
+                      
+
 
 def main(args=None):
     rclpy.init(args=args)
