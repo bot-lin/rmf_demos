@@ -63,6 +63,7 @@ class WebSocketNode(Node):
         return x, y
     
     def task_callback(self, msg):
+        self.get_logger().info(f"Received task request: {msg}")
         x = msg.path[0].x
         y = msg.path[0].y
         yaw = msg.path[0].yaw
