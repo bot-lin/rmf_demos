@@ -276,7 +276,7 @@ class FleetManager(Node):
                 "precision_yaw": 0.1,
                 "is_reverse": False,
                 "nav_type": "auto",
-                "task_id": msg.task_id,
+                "task_id": str(cmd_id),
                 "inflation_radius": 1.1
             }
             response = requests.post('http://10.6.75.222:1234/go_to', json=post_data)
