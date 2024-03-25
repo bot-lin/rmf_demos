@@ -84,7 +84,7 @@ class WebSocketNode(Node):
             "task_id": msg.task_id,
             "inflation_radius": 1.1
         }
-        response = requests.post('http://0.0.0.0:1234/go_to', json=post_data)
+        response = requests.post('http://10.6.75.222:1234/go_to', json=post_data)
         print(response.text)
                       
 
