@@ -31,7 +31,7 @@ class WebSocketNode(Node):
                 data_dict = json.loads(message)
                 data_ros = RobotState()
                 data_ros.name = 'tinyrobot1'
-                data_ros.model = 'diff'
+                data_ros.model = 'tinyrobot'
                 data_ros.task_id = ''
                 data_ros.seq = seq 
                 data_ros.mode.mode = 0

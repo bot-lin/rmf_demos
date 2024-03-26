@@ -261,11 +261,12 @@ class FleetManager(Node):
             path_request.path.append(target_loc)
             path_request.task_id = str(cmd_id)
             self.get_logger().info(f'navigation: path_request.task_id: {path_request.task_id}')
+            map_x, map_y = self.find_real_world_coordinates(target_x, target_y)
             post_data = {
                 "pose": {
                     "position": {
-                        "x": target_x,
-                        "y": target_y
+                        "x": map_x,
+                        "y": map_y
                     },
                     "pyr": {
                         "yaw": target_yaw
@@ -401,6 +402,20 @@ class FleetManager(Node):
             self.robots[robot_name].mode_teleop = mode.toggle
             response['success'] = True
             return response
+        
+    def find_real_world_coordinates(map_x, map_y, resolution=0.05, origin_x=-24.5, origin_y=-28.9, height=896):
+        # Reverting the operation: convert map grid coordinates back to distances
+        real_x = map_x * resolution
+        real_y = map_y * resolution
+
+        # Adjusting y-coordinate to real-world coordinates system
+        real_y = height * resolution - real_y
+
+        # Adding the origin offset
+        real_x += origin_x
+        real_y += origin_y
+
+        return real_x, real_y
 
     def robot_state_cb(self, msg):
         if msg.name in self.robots:
