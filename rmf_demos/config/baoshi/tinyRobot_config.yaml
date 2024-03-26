@@ -2,7 +2,7 @@
 # RMF Fleet parameters
 
 rmf_fleet:
-  name: "tinyRobot"
+  name: "tinyrobot"
   limits:
     linear: [0.5, 0.75] # velocity, acceleration
     angular: [0.6, 2.0] # velocity, acceleration
