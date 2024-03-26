@@ -62,6 +62,11 @@ class WebSocketNode(Node):
         y = - temp_y * resolution
         return x, y
     
+
+    
+
+
+    
     def task_callback(self, msg):
         self.get_logger().info(f"Received task request: {msg}")
         x = msg.path[0].x
