@@ -206,7 +206,7 @@ class FleetManager(Node):
                 state = self.robots.get(robot_name)
                 if state is None or state.state is None:
                     return response
-                self.get_logger().info("{} {} {}".format(state.location.x, state.location.y, state.location.yaw))
+                self.get_logger().info("{} {} {}".format(state.state.location.x, state.state.location.y, state.state.location.yaw))
                 response['data'] = self.get_robot_state(state, robot_name)
                 self.get_logger().info("{}".format(response['data']))
             response['success'] = True
