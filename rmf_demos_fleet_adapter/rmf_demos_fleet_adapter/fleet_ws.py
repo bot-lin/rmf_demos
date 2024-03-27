@@ -12,7 +12,6 @@ import requests
 class WebSocketNode(Node):
     def __init__(self):
         super().__init__('websocket_node')
-        self.publisher_ = self.create_publisher(String, 'topic', 10)
         self.robot_state_publisher_ = self.create_publisher(RobotState, 'robot_state', 10)
         self.create_subscription(PathRequest, 'robot_path_requests', self.task_callback, 10)
         self.websockets = []
@@ -49,10 +48,13 @@ class WebSocketNode(Node):
                     case 'waiting': data_ros.mode.mode = 4
                 data_ros.location.t = self.get_clock().now().to_msg()
                 self.robot_state_publisher_.publish(data_ros)
+                self.confirm_robot_state(data_dict, 'tinyrobot1')
 
-                msg = String()
-                msg.data = f"{message}"
-                self.publisher_.publish(msg)
+
+    def confirm_robot_state(self, data_dict, robot_name):
+        if data_dict['fsm'] in ['succeeded', 'canceled', 'failed']:
+            http_response = requests.get('http://10.6.75.222:1234/confirm_status')
+            self.get_logger().info(http_response.text)
 
     def run(self, uris):
         loop = asyncio.get_event_loop()
