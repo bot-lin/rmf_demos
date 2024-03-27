@@ -210,6 +210,7 @@ class FleetManager(Node):
                 response['data'] = self.get_robot_state(state, robot_name)
                 self.get_logger().info("{}".format(response['data']))
             response['success'] = True
+            rclpy.spin_once(self, timeout_sec=0.1)
             return response
 
         @app.post('/open-rmf/rmf_demos_fm/navigate/', response_model=Response)
