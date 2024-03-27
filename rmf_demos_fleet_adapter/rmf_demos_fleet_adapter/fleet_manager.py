@@ -35,6 +35,8 @@ from rclpy.qos import QoSHistoryPolicy as History
 from rclpy.qos import QoSProfile
 from rclpy.qos import QoSReliabilityPolicy as Reliability
 import rmf_adapter as adpt
+from rclpy.executors import MultiThreadedExecutor
+
 import rmf_adapter.geometry as geometry
 import rmf_adapter.vehicletraits as traits
 from rmf_fleet_msgs.msg import DockSummary
@@ -210,7 +212,7 @@ class FleetManager(Node):
                 response['data'] = self.get_robot_state(state, robot_name)
                 # self.get_logger().info("{}".format(response['data']))
             response['success'] = True
-            rclpy.spin_once(self, timeout_sec=0.1)
+            # rclpy.spin_once(self, timeout_sec=0.1)
             return response
 
         @app.post('/open-rmf/rmf_demos_fm/navigate/', response_model=Response)
@@ -528,6 +530,11 @@ class FleetManager(Node):
 # ------------------------------------------------------------------------------
 # Main
 # ------------------------------------------------------------------------------
+def ros2_thread(node):
+    print('entering ros2 thread')
+    node.spin()
+    print('leaving ros2 thread')
+
 def main(argv=sys.argv):
     # Init rclpy and adapter
     rclpy.init(args=argv)
@@ -559,8 +566,10 @@ def main(argv=sys.argv):
         config = yaml.safe_load(f)
 
     fleet_manager = FleetManager(config, args.nav_graph)
+    executor = MultiThreadedExecutor(num_threads=6)
+    executor.add_node(fleet_manager)    
 
-    spin_thread = threading.Thread(target=rclpy.spin, args=(fleet_manager,))
+    spin_thread = threading.Thread(target=ros2_thread, args=(executor,))
     spin_thread.start()
 
     uvicorn.run(
