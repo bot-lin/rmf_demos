@@ -411,6 +411,7 @@ class FleetManager(Node):
         return x, y
 
     def robot_state_cb(self, msg):
+        self.get_logger().info("{}".format(msg))
         if msg.name in self.robots:
             robot = self.robots[msg.name]
             if (
