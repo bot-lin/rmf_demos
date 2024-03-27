@@ -14,7 +14,7 @@ class WebSocketNode(Node):
         super().__init__('websocket_node')
         self.publisher_ = self.create_publisher(String, 'topic', 10)
         self.robot_state_publisher_ = self.create_publisher(RobotState, 'robot_state', 10)
-        # self.create_subscription(PathRequest, 'robot_path_requests', self.task_callback, 10)
+        self.create_subscription(PathRequest, 'robot_path_requests', self.task_callback, 10)
         self.websockets = []
 
     async def connect_to_websocket(self, uri):
@@ -35,7 +35,7 @@ class WebSocketNode(Node):
                 data_ros.task_id = ''
                 data_ros.seq = seq 
                 data_ros.mode.mode = 0
-                x, y = self.find_map_in_b(float(data_dict['pose']['position']['x']), float(data_dict['pose']['position']['y']))
+                x, y = self.find_map_in_rmf(float(data_dict['pose']['position']['x']), float(data_dict['pose']['position']['y']))
                 data_ros.battery_percent = float(data_dict['battery'])
                 data_ros.location.x = x
                 data_ros.location.y = y
@@ -57,7 +57,7 @@ class WebSocketNode(Node):
         tasks = asyncio.gather(*tasks)
         loop.run_until_complete(tasks)
         
-    def find_map_in_b(self, given_x, given_y, resolution=0.05, origin_x=-24.5, origin_y=-28.9, height=896):
+    def find_map_in_rmf(self, given_x, given_y, resolution=0.05, origin_x=-24.5, origin_y=-28.9, height=896):
         temp_x = given_x - origin_x
         temp_y = given_y - origin_y
         map_x = int(temp_x / resolution)
@@ -67,6 +67,13 @@ class WebSocketNode(Node):
         y = - temp_y * resolution
         return x, y
     
+    def find_map_in_ros(self, given_x, given_y, resolution=0.05, origin_x=-24.5, origin_y=-28.9, height=896):
+        x = given_x + origin_x
+        map_y = - given_y / resolution
+        temp_y = height - map_y
+        y = temp_y * resolution + origin_y
+        return x, y
+    
 
     
 
@@ -74,29 +81,57 @@ class WebSocketNode(Node):
     
     def task_callback(self, msg):
         self.get_logger().info(f"Received task request: {msg}")
-        x = msg.path[0].x
-        y = msg.path[0].y
-        yaw = msg.path[0].yaw
-        post_data = {
-            "pose": {
-                "position": {
-                    "x": x,
-                    "y": y
-                },
-                "pyr": {
-                    "yaw": yaw
-                }
-            },
-            "use_pyr": True,
-            "precision_xy": 0.1,
-            "precision_yaw": 0.1,
-            "is_reverse": False,
-            "nav_type": "auto",
-            "task_id": msg.task_id,
-            "inflation_radius": 1.1
-        }
-        response = requests.post('http://10.6.75.222:1234/go_to', json=post_data)
-        self.get_logger().info(response.text)
+        # self.get_logger().info(f'navigation: path_request.task_id: {path_request.task_id}')
+        # map_x, map_y = self.find_map_in_a(target_x, target_y)
+        # post_data = {
+        #     "pose": {
+        #         "position": {
+        #             "x": map_x,
+        #             "y": map_y
+        #         },
+        #         "pyr": {
+        #             "yaw": target_yaw
+        #         },
+        #         "orientation": {
+        #             "x": 0,
+        #             "y": 0,
+        #             "z": 0,
+        #             "w": 1
+        #         }
+        #     },
+        #     "use_pyr": True,
+        #     "precision_xy": 0.1,
+        #     "precision_yaw": 0.1,
+        #     "is_reverse": False,
+        #     "nav_type": "auto",
+        #     "task_id": str(cmd_id),
+        #     "inflation_radius": 1.1
+        # }
+        # http_response = requests.post('http://10.6.75.222:1234/go_to', json=post_data)
+        # self.get_logger().info(http_response.text)
+        # x = msg.path[0].x
+        # y = msg.path[0].y
+        # yaw = msg.path[0].yaw
+        # post_data = {
+        #     "pose": {
+        #         "position": {
+        #             "x": x,
+        #             "y": y
+        #         },
+        #         "pyr": {
+        #             "yaw": yaw
+        #         }
+        #     },
+        #     "use_pyr": True,
+        #     "precision_xy": 0.1,
+        #     "precision_yaw": 0.1,
+        #     "is_reverse": False,
+        #     "nav_type": "auto",
+        #     "task_id": msg.task_id,
+        #     "inflation_radius": 1.1
+        # }
+        # response = requests.post('http://10.6.75.222:1234/go_to', json=post_data)
+        # self.get_logger().info(response.text)
                       
 
 def ros2_thread(node):
