@@ -32,7 +32,7 @@ class WebSocketNode(Node):
                 data_ros = RobotState()
                 data_ros.name = 'tinyrobot1'
                 data_ros.model = 'tinyrobot'
-                data_ros.task_id = ''
+                data_ros.task_id = data_dict['current_task_uid']
                 data_ros.seq = seq 
                 data_ros.mode.mode = 0
                 x, y = self.find_map_in_rmf(float(data_dict['pose']['position']['x']), float(data_dict['pose']['position']['y']))
@@ -82,33 +82,36 @@ class WebSocketNode(Node):
     def task_callback(self, msg):
         self.get_logger().info(f"Received task request: {msg}")
         # self.get_logger().info(f'navigation: path_request.task_id: {path_request.task_id}')
-        # map_x, map_y = self.find_map_in_a(target_x, target_y)
-        # post_data = {
-        #     "pose": {
-        #         "position": {
-        #             "x": map_x,
-        #             "y": map_y
-        #         },
-        #         "pyr": {
-        #             "yaw": target_yaw
-        #         },
-        #         "orientation": {
-        #             "x": 0,
-        #             "y": 0,
-        #             "z": 0,
-        #             "w": 1
-        #         }
-        #     },
-        #     "use_pyr": True,
-        #     "precision_xy": 0.1,
-        #     "precision_yaw": 0.1,
-        #     "is_reverse": False,
-        #     "nav_type": "auto",
-        #     "task_id": str(cmd_id),
-        #     "inflation_radius": 1.1
-        # }
-        # http_response = requests.post('http://10.6.75.222:1234/go_to', json=post_data)
-        # self.get_logger().info(http_response.text)
+        target_x = msg.path[1].x
+        target_y = msg.path[1].y
+        target_yaw = msg.path[1].yaw
+        map_x, map_y = self.find_map_in_a(target_x, target_y)
+        post_data = {
+            "pose": {
+                "position": {
+                    "x": map_x,
+                    "y": map_y
+                },
+                "pyr": {
+                    "yaw": target_yaw
+                },
+                "orientation": {
+                    "x": 0,
+                    "y": 0,
+                    "z": 0,
+                    "w": 1
+                }
+            },
+            "use_pyr": True,
+            "precision_xy": 0.1,
+            "precision_yaw": 0.1,
+            "is_reverse": False,
+            "nav_type": "auto",
+            "task_id": str(msg.task_id),
+            "inflation_radius": 1.1
+        }
+        http_response = requests.post('http://10.6.75.222:1234/go_to', json=post_data)
+        self.get_logger().info(http_response.text)
         # x = msg.path[0].x
         # y = msg.path[0].y
         # yaw = msg.path[0].yaw
