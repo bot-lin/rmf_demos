@@ -266,34 +266,6 @@ class FleetManager(Node):
             path_request.robot_name = robot_name
             path_request.path.append(target_loc)
             path_request.task_id = str(cmd_id)
-            self.get_logger().info(f'navigation: path_request.task_id: {path_request.task_id}')
-            map_x, map_y = self.find_map_in_a(target_x, target_y)
-            post_data = {
-                "pose": {
-                    "position": {
-                        "x": map_x,
-                        "y": map_y
-                    },
-                    "pyr": {
-                        "yaw": target_yaw
-                    },
-                    "orientation": {
-                        "x": 0,
-                        "y": 0,
-                        "z": 0,
-                        "w": 1
-                    }
-                },
-                "use_pyr": True,
-                "precision_xy": 0.1,
-                "precision_yaw": 0.1,
-                "is_reverse": False,
-                "nav_type": "auto",
-                "task_id": str(cmd_id),
-                "inflation_radius": 1.1
-            }
-            http_response = requests.post('http://10.6.75.222:1234/go_to', json=post_data)
-            self.get_logger().info(http_response.text)
             self.path_pub.publish(path_request)
 
             if self.debug:
@@ -413,12 +385,7 @@ class FleetManager(Node):
             response['success'] = True
             return response
         
-    def find_map_in_a(self, given_x, given_y, resolution=0.05, origin_x=-24.5, origin_y=-28.9, height=896):
-        x = given_x + origin_x
-        map_y = - given_y / resolution
-        temp_y = height - map_y
-        y = temp_y * resolution + origin_y
-        return x, y
+    
 
     def robot_state_cb(self, msg):
         
