@@ -224,3 +224,7 @@ class RobotUpdateData:
 
     def is_command_completed(self, cmd_id):
         return self.last_request_completed == cmd_id
+
+    
+    def to_dict(self):
+        return self.__dict__

@@ -385,7 +385,7 @@ def parallel(f):
 @parallel
 def update_robot(robot: RobotAdapter, node):
     data = robot.api.get_data(robot.name)
-    node.get_logger().info(data.__dict__)
+    node.get_logger().info(data.to_dict())
     if data is None:
         return
 
