@@ -34,7 +34,7 @@ class WebSocketNode(Node):
                 data_ros = RobotState()
                 data_ros.name = 'tinyrobot1'
                 data_ros.model = 'tinyrobot'
-                data_ros.task_id = data_dict['current_task_uid'] if data_dict['current_task_uid'] is not None else ''
+                data_ros.task_id = self.tasks['tinyrobot1'][-1]['task_id'] if len(self.tasks['tinyrobot1']) > 0 else data_dict['current_task_uid'] if 'current_task_uid' in data_dict else ''
                 data_ros.seq = seq 
                 data_ros.mode.mode = 0
                 x, y = self.find_map_in_rmf(float(data_dict['pose']['position']['x']), float(data_dict['pose']['position']['y']))
