@@ -217,6 +217,7 @@ class FleetManager(Node):
 
         @app.post('/open-rmf/rmf_demos_fm/navigate/', response_model=Response)
         async def navigate(robot_name: str, cmd_id: int, dest: Request):
+            self.get_logger().info(f'navigate: {robot_name}')
             response = {'success': False, 'msg': ''}
             if robot_name not in self.robots or len(dest.destination) < 1:
                 return response
@@ -305,6 +306,7 @@ class FleetManager(Node):
 
         @app.get('/open-rmf/rmf_demos_fm/stop_robot/', response_model=Response)
         async def stop(robot_name: str, cmd_id: int):
+            self.get_logger().info(f'stop robot: {robot_name}')
             response = {'success': False, 'msg': ''}
             if robot_name not in self.robots:
                 return response
@@ -335,6 +337,7 @@ class FleetManager(Node):
             '/open-rmf/rmf_demos_fm/action_paths/', response_model=Response
         )
         async def action_paths(activity: str, label: str):
+            self.get_logger().info(f'action paths: {activity} {label}')
             response = {'success': False, 'msg': ''}
             if activity not in self.action_paths:
                 return response
@@ -352,6 +355,7 @@ class FleetManager(Node):
         async def start_activity(
             robot_name: str, cmd_id: int, request: Request
         ):
+            self.get_logger().info(f'start activity: {robot_name}')
             response = {'success': False, 'msg': ''}
             if (
                 robot_name not in self.robots
@@ -400,6 +404,7 @@ class FleetManager(Node):
             '/open-rmf/rmf_demos_fm/toggle_teleop/', response_model=Response
         )
         async def toggle_teleop(robot_name: str, mode: Request):
+            self.get_logger().info(f'toggle teleop: {robot_name}')
             response = {'success': False, 'msg': ''}
             if robot_name not in self.robots:
                 return response
@@ -419,7 +424,6 @@ class FleetManager(Node):
         
         if msg.name in self.robots:
             robot = self.robots[msg.name]
-            robot.state = msg
             if (
                 not robot.is_expected_task_id(msg.task_id)
                 and not robot.mode_teleop
