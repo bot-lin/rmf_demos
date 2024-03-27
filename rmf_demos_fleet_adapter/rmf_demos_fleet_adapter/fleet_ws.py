@@ -15,6 +15,9 @@ class WebSocketNode(Node):
         self.robot_state_publisher_ = self.create_publisher(RobotState, 'robot_state', 10)
         self.create_subscription(PathRequest, 'robot_path_requests', self.task_callback, 10)
         self.websockets = []
+        self.tasks = {
+            'tinyrobot1': []
+        }
 
     async def connect_to_websocket(self, uri):
         websocket = await websockets.connect(uri)
@@ -49,6 +52,10 @@ class WebSocketNode(Node):
                 data_ros.location.t = self.get_clock().now().to_msg()
                 self.robot_state_publisher_.publish(data_ros)
                 self.confirm_robot_state(data_dict, 'tinyrobot1')
+                if data_ros.mode.mode == 0 and len(self.tasks['tinyrobot1']) > 0:
+                    post_data = self.tasks['tinyrobot1'].pop(0)
+                    http_response = requests.post('http://10.6.75.222:1234/go_to', json=post_data)
+                    self.get_logger().info(http_response.text)
 
 
     def confirm_robot_state(self, data_dict, robot_name):
@@ -113,9 +120,8 @@ class WebSocketNode(Node):
             "task_id": str(msg.task_id),
             "inflation_radius": 1.1
         }
-        http_response = requests.post('http://10.6.75.222:1234/go_to', json=post_data)
-        self.get_logger().info(http_response.text)
-
+        self.tasks[msg.robot_name].append(post_data)
+        
 def ros2_thread(node):
     print('entering ros2 thread')
     rclpy.spin(node)
