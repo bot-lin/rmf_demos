@@ -416,6 +416,7 @@ class FleetManager(Node):
         return x, y
 
     def robot_state_cb(self, msg):
+        self.get_logger().info("callback: {}".format(msg))
         if msg.name in self.robots:
             robot = self.robots[msg.name]
             if (
@@ -436,7 +437,7 @@ class FleetManager(Node):
                 return
 
             robot.state = msg
-            self.get_logger().info("callback: {}".format(robot.state.location.x))
+            # self.get_logger().info("callback: {}".format(robot.state.location.x))
             
             # Check if robot has reached destination
             if robot.destination is None:
