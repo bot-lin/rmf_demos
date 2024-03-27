@@ -85,7 +85,7 @@ class WebSocketNode(Node):
         target_x = msg.path[1].x
         target_y = msg.path[1].y
         target_yaw = msg.path[1].yaw
-        map_x, map_y = self.find_map_in_a(target_x, target_y)
+        map_x, map_y = self.find_map_in_ros(target_x, target_y)
         post_data = {
             "pose": {
                 "position": {
