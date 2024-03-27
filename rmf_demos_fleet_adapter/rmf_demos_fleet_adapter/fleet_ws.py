@@ -53,9 +53,11 @@ class WebSocketNode(Node):
                 self.robot_state_publisher_.publish(data_ros)
                 self.confirm_robot_state(data_dict, 'tinyrobot1')
                 if data_ros.mode.mode == 0 and len(self.tasks['tinyrobot1']) > 0:
-                    post_data = self.tasks['tinyrobot1'].pop(0)
+                    post_data = self.tasks['tinyrobot1'][0]
                     http_response = requests.post('http://10.6.75.222:1234/go_to', json=post_data)
                     self.get_logger().info(http_response.text)
+                    if json.loads(http_response.text)["code"] == 0:
+                        self.tasks['tinyrobot1'].pop(0)
 
 
     def confirm_robot_state(self, data_dict, robot_name):

@@ -221,6 +221,7 @@ class FleetManager(Node):
             response = {'success': False, 'msg': ''}
             if robot_name not in self.robots or len(dest.destination) < 1:
                 return response
+            
 
             robot = self.robots[robot_name]
 
