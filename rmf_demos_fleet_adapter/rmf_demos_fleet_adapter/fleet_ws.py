@@ -48,14 +48,14 @@ class WebSocketNode(Node):
                 data_ros.location.level_name = 'L1'
                 match data_dict['robot_mode']:
                     case 'idle': data_ros.mode.mode = 0
-                    case 'charing': data_ros.mode.mode = 1
+                    case 'charging': data_ros.mode.mode = 1
                     case 'moving': data_ros.mode.mode = 2
                     case 'paused': data_ros.mode.mode = 3
                     case 'waiting': data_ros.mode.mode = 4
                 data_ros.location.t = self.get_clock().now().to_msg()
                 self.robot_state_publisher_.publish(data_ros)
                 self.confirm_robot_state(data_dict, data_ros.name)
-                if data_ros.mode.mode == 0 and len(self.tasks[data_ros.name]) > 0:
+                if data_ros.mode.mode in [0, 1] and len(self.tasks[data_ros.name]) > 0:
                     post_data = self.tasks[data_ros.name][0]
                     http_response = requests.post('http://10.6.75.222:1234/go_to', json=post_data)
                     self.get_logger().info(http_response.text)
