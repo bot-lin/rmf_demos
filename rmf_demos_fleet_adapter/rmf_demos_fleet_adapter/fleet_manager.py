@@ -433,7 +433,7 @@ class FleetManager(Node):
                 return
 
             robot.state = msg
-            self.get_logger().info("callback: {}".format(robot.state.x))
+            self.get_logger().info("callback: {}".format(robot.state.location.x))
             
             # Check if robot has reached destination
             if robot.destination is None:
