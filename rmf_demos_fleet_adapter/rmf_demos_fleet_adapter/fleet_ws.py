@@ -18,6 +18,9 @@ class WebSocketNode(Node):
         self.tasks = {
             'tinyrobot1': []
         }
+        self.latest_task_id = {
+            'tinyrobot1': ''
+        }
 
     async def connect_to_websocket(self, uri):
         websocket = await websockets.connect(uri)
@@ -34,7 +37,7 @@ class WebSocketNode(Node):
                 data_ros = RobotState()
                 data_ros.name = 'tinyrobot1'
                 data_ros.model = 'tinyrobot'
-                data_ros.task_id = self.tasks['tinyrobot1'][-1]['task_id'] if len(self.tasks['tinyrobot1']) > 0 else data_dict['current_task_uid'] if 'current_task_uid' in data_dict else ''
+                data_ros.task_id = self.latest_task_id[data_ros.name]
                 data_ros.seq = seq 
                 data_ros.mode.mode = 0
                 x, y = self.find_map_in_rmf(float(data_dict['pose']['position']['x']), float(data_dict['pose']['position']['y']))
@@ -51,13 +54,13 @@ class WebSocketNode(Node):
                     case 'waiting': data_ros.mode.mode = 4
                 data_ros.location.t = self.get_clock().now().to_msg()
                 self.robot_state_publisher_.publish(data_ros)
-                self.confirm_robot_state(data_dict, 'tinyrobot1')
-                if data_ros.mode.mode == 0 and len(self.tasks['tinyrobot1']) > 0:
-                    post_data = self.tasks['tinyrobot1'][0]
+                self.confirm_robot_state(data_dict, data_ros.name)
+                if data_ros.mode.mode == 0 and len(self.tasks[data_ros.name]) > 0:
+                    post_data = self.tasks[data_ros.name][0]
                     http_response = requests.post('http://10.6.75.222:1234/go_to', json=post_data)
                     self.get_logger().info(http_response.text)
                     if json.loads(http_response.text)["code"] == 0:
-                        self.tasks['tinyrobot1'].pop(0)
+                        self.tasks[data_ros.name].pop(0)
 
 
     def confirm_robot_state(self, data_dict, robot_name):
@@ -123,6 +126,7 @@ class WebSocketNode(Node):
             "inflation_radius": 1.1
         }
         self.tasks[msg.robot_name].append(post_data)
+        self.latest_task_id[msg.robot_name] = str(msg.task_id)
         
 def ros2_thread(node):
     print('entering ros2 thread')
