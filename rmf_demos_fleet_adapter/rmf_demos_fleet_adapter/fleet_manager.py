@@ -417,6 +417,8 @@ class FleetManager(Node):
 
     def robot_state_cb(self, msg):
         self.get_logger().info("callback: {}".format(msg))
+        self.get_logger().info("self.robots: {}".format(self.robots))
+        self.get_logger().info("is msg.name in self.robots: {}".format(msg.name in self.robots))
         if msg.name in self.robots:
             robot = self.robots[msg.name]
             if (
