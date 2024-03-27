@@ -419,6 +419,7 @@ class FleetManager(Node):
         
         if msg.name in self.robots:
             robot = self.robots[msg.name]
+            robot.state = msg
             if (
                 not robot.is_expected_task_id(msg.task_id)
                 and not robot.mode_teleop
