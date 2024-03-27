@@ -145,7 +145,7 @@ def main(argv=sys.argv):
             # Update all the robots in parallel using a thread pool
             update_jobs = []
             for robot in robots.values():
-                update_jobs.append(update_robot(robot))
+                update_jobs.append(update_robot(robot, node))
 
             asyncio.get_event_loop().run_until_complete(
                 asyncio.wait(update_jobs)
@@ -383,8 +383,9 @@ def parallel(f):
 
 
 @parallel
-def update_robot(robot: RobotAdapter):
+def update_robot(robot: RobotAdapter, node):
     data = robot.api.get_data(robot.name)
+    node.get_logger().info(data)
     if data is None:
         return
 
