@@ -6,7 +6,7 @@ from std_msgs.msg import String
 from rmf_fleet_msgs.msg import RobotState, RobotMode, Location
 from rmf_fleet_msgs.msg import PathRequest
 from rclpy.qos import qos_profile_system_default
-
+import threading
 import json
 import requests
 class WebSocketNode(Node):
@@ -49,9 +49,14 @@ class WebSocketNode(Node):
                 self.publisher_.publish(msg)
 
     def run(self, uris):
+        loop = asyncio.get_event_loop()
+        tasks = []
         for uri in uris:
-            asyncio.get_event_loop().run_until_complete(self.start(uri))
-
+            task = loop.create_task(self.start(uri))
+            tasks.append(task)
+        tasks = asyncio.gather(*tasks)
+        loop.run_until_complete(tasks)
+        
     def find_map_in_b(self, given_x, given_y, resolution=0.05, origin_x=-24.5, origin_y=-28.9, height=896):
         temp_x = given_x - origin_x
         temp_y = given_y - origin_y
@@ -94,14 +99,19 @@ class WebSocketNode(Node):
         self.get_logger().info(response.text)
                       
 
+def ros2_thread(node):
+    print('entering ros2 thread')
+    rclpy.spin(node)
+    print('leaving ros2 thread')
 
 def main(args=None):
     rclpy.init(args=args)
 
     websocket_node = WebSocketNode()
+    spin_thread = threading.Thread(target=ros2_thread, args=(websocket_node,))
+    spin_thread.start()
     websocket_node.run(['ws://10.6.75.222:1234/robot_data'])  # replace with your WebSocket server URIs
 
-    rclpy.spin(websocket_node)
 
     websocket_node.destroy_node()
     rclpy.shutdown()
