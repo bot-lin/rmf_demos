@@ -206,7 +206,9 @@ class FleetManager(Node):
                 state = self.robots.get(robot_name)
                 if state is None or state.state is None:
                     return response
+                self.get_logger().info("{}".format(state))
                 response['data'] = self.get_robot_state(state, robot_name)
+                self.get_logger().info("{}".format(response['data']))
             response['success'] = True
             return response
 
@@ -411,7 +413,6 @@ class FleetManager(Node):
         return x, y
 
     def robot_state_cb(self, msg):
-        self.get_logger().info("{}".format(msg))
         if msg.name in self.robots:
             robot = self.robots[msg.name]
             if (
