@@ -19,7 +19,6 @@ class WebSocketNode(Node):
         super().__init__('websocket_node')
         self.robot_state_publisher_ = self.create_publisher(RobotState, 'robot_state', 10)
         self.create_subscription(PathRequest, 'robot_path_requests', self.task_callback, 10)
-        self.websockets = []
         self.fleet_name = config['rmf_fleet']['name']
         self.robots = config['rmf_fleet']['robots'].items()
         self.get_logger().info(f'Fleet name: {self.fleet_name}')
@@ -35,45 +34,49 @@ class WebSocketNode(Node):
         self.original_y = -26.6
         self.height = 1021
 
-    async def connect_to_websocket(self, uri):
-        websocket = await websockets.connect(uri)
-        self.websockets.append(websocket)
+    def set_robot_fleet_name(self, fleet_name, robot_name,ip):
+        post_data = {
+            "robot_name": robot_name,
+            "fleet_name": fleet_name
+        }
+        http_response = requests.post('http://{}/set_fleet_name'.format(ip), json=post_data)
+        self.get_logger().info(http_response.text)
 
-    async def start(self, robot_name, fleet_name, uri):
-        await self.connect_to_websocket(uri)
+    async def start(self, uri):
+        # await self.connect_to_websocket(uri)
+        websocket = await websockets.connect(uri)
         seq = 0
         while True:
             seq += 1
-            for websocket in self.websockets:
-                message = await websocket.recv()
-                data_dict = json.loads(message)
-                data_ros = RobotState()
-                data_ros.name = 'tinyrobot1'
-                data_ros.model = 'tinyrobot'
-                data_ros.task_id = self.latest_task_id[data_ros.name]
-                data_ros.seq = seq 
-                data_ros.mode.mode = 0
-                x, y = self.find_map_in_rmf(float(data_dict['pose']['position']['x']), float(data_dict['pose']['position']['y']), origin_x=self.original_x, origin_y=self.original_y, height=self.height)
-                data_ros.battery_percent = float(data_dict['battery'])
-                data_ros.location.x = x
-                data_ros.location.y = y
-                data_ros.location.yaw = float(data_dict['pose']['pyr']['yaw'])
-                data_ros.location.level_name = 'L1'
-                match data_dict['robot_mode']:
-                    case 'idle': data_ros.mode.mode = 0
-                    case 'charging': data_ros.mode.mode = 1
-                    case 'moving': data_ros.mode.mode = 2
-                    case 'paused': data_ros.mode.mode = 3
-                    case 'waiting': data_ros.mode.mode = 4
-                data_ros.location.t = self.get_clock().now().to_msg()
-                self.robot_state_publisher_.publish(data_ros)
-                self.confirm_robot_state(data_dict, data_ros.name)
-                if data_ros.mode.mode in [0, 1] and len(self.tasks[data_ros.name]) > 0:
-                    post_data = self.tasks[data_ros.name][0]
-                    http_response = requests.post('http://10.6.75.222:1234/go_to', json=post_data)
-                    self.get_logger().info(http_response.text)
-                    if json.loads(http_response.text)["code"] == 0:
-                        self.tasks[data_ros.name].pop(0)
+            message = await websocket.recv()
+            data_dict = json.loads(message)
+            data_ros = RobotState()
+            data_ros.name = data_dict['robot_name']
+            data_ros.model = data_dict['fleet_name']
+            data_ros.task_id = self.latest_task_id[data_ros.name]
+            data_ros.seq = seq 
+            data_ros.mode.mode = 0
+            x, y = self.find_map_in_rmf(float(data_dict['pose']['position']['x']), float(data_dict['pose']['position']['y']), origin_x=self.original_x, origin_y=self.original_y, height=self.height)
+            data_ros.battery_percent = float(data_dict['battery'])
+            data_ros.location.x = x
+            data_ros.location.y = y
+            data_ros.location.yaw = float(data_dict['pose']['pyr']['yaw'])
+            data_ros.location.level_name = 'L1'
+            match data_dict['robot_mode']:
+                case 'idle': data_ros.mode.mode = 0
+                case 'charging': data_ros.mode.mode = 1
+                case 'moving': data_ros.mode.mode = 2
+                case 'paused': data_ros.mode.mode = 3
+                case 'waiting': data_ros.mode.mode = 4
+            data_ros.location.t = self.get_clock().now().to_msg()
+            self.robot_state_publisher_.publish(data_ros)
+            self.confirm_robot_state(data_dict, data_ros.name)
+            if data_ros.mode.mode in [0, 1] and len(self.tasks[data_ros.name]) > 0:
+                post_data = self.tasks[data_ros.name][0]
+                http_response = requests.post('http://10.6.75.222:1234/go_to', json=post_data)
+                self.get_logger().info(http_response.text)
+                if json.loads(http_response.text)["code"] == 0:
+                    self.tasks[data_ros.name].pop(0)
 
 
     def confirm_robot_state(self, data_dict, robot_name):
@@ -86,8 +89,9 @@ class WebSocketNode(Node):
         tasks = []
         for robot_name, value in self.robots:
             uri = 'ws://{}/robot_data'.format(value['ip'])
-            task = loop.create_task(self.start(robot_name=robot_name, fleet_name=self.fleet_name, uri=uri))
+            task = loop.create_task(self.start(uri=uri))
             tasks.append(task)
+            self.set_robot_fleet_name(fleet_name=self.fleet_name, robot_name=robot_name, ip=value['ip'])
         tasks = asyncio.gather(*tasks)
         loop.run_until_complete(tasks)
         
