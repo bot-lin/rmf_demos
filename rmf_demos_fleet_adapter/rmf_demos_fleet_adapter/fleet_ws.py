@@ -18,10 +18,9 @@ import math
 class WebSocketNode(Node):
     def __init__(self, config):
         super().__init__('websocket_node')
-        self.robot_state_publisher_ = self.create_publisher(RobotState, 'robot_state', 10)
-        self.create_subscription(PathRequest, 'robot_path_requests', self.task_callback, 10)
+        
         self.fleet_name = config['rmf_fleet']['name']
-        self.robots = config['rmf_fleet']['robots'].items()
+        self.robots = config['rmf_fleet']['robots']
         self.get_logger().info(f'Fleet name: {self.fleet_name}')
         self.get_logger().info(f'Robots: {self.robots}')
         self.tasks = {
@@ -34,6 +33,8 @@ class WebSocketNode(Node):
         self.original_x = -22.9
         self.original_y = -26.6
         self.height = 1021
+        self.robot_state_publisher_ = self.create_publisher(RobotState, 'robot_state', 10)
+        self.create_subscription(PathRequest, 'robot_path_requests', self.task_callback, 10)
 
     def set_robot_fleet_name(self, fleet_name, robot_name,ip):
         post_data = {
@@ -89,11 +90,11 @@ class WebSocketNode(Node):
     def run(self):
         loop = asyncio.get_event_loop()
         tasks = []
-        for robot_name, value in self.robots:
+        for robot_name, value in self.robots.items():
+            self.set_robot_fleet_name(fleet_name=self.fleet_name, robot_name=robot_name, ip=value['ip'])
             uri = 'ws://{}/robot_data'.format(value['ip'])
             task = loop.create_task(self.start(uri=uri))
             tasks.append(task)
-            self.set_robot_fleet_name(fleet_name=self.fleet_name, robot_name=robot_name, ip=value['ip'])
         tasks = asyncio.gather(*tasks)
         loop.run_until_complete(tasks)
         
