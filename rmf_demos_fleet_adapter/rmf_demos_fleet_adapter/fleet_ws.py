@@ -73,7 +73,7 @@ class WebSocketNode(Node):
             self.confirm_robot_state(data_dict, data_ros.name)
             if data_ros.mode.mode in [0, 1] and len(self.tasks[data_ros.name]) > 0:
                 post_data = self.tasks[data_ros.name][0]
-                http_response = requests.post('http://10.6.75.222:1234/go_to', json=post_data)
+                http_response = requests.post('http://{}/go_to'.format(self.robots[data_ros.name]['ip']), json=post_data)
                 self.get_logger().info(http_response.text)
                 if json.loads(http_response.text)["code"] == 0:
                     self.tasks[data_ros.name].pop(0)
@@ -81,7 +81,8 @@ class WebSocketNode(Node):
 
     def confirm_robot_state(self, data_dict, robot_name):
         if data_dict['fsm'] in ['succeeded', 'canceled', 'failed']:
-            http_response = requests.get('http://10.6.75.222:1234/confirm_status')
+            ip = self.robots[robot_name]['ip']
+            http_response = requests.get('http://{}/confirm_status'.format(ip))
             self.get_logger().info(http_response.text)
 
     def run(self):
