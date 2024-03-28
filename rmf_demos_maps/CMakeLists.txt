@@ -98,7 +98,7 @@ foreach(path ${traffic_editor_paths})
   ##############################################################################
   # Generate the nav graphs
   ##############################################################################
-
+  message("GENERATING NAV GRAPHS WITH COMMAND: ros2 run rmf_building_map_tools building_map_generator nav ${map_path} ${output_nav_graphs_dir}")
   set(output_nav_graphs_dir ${output_dir}/nav_graphs/)
   set(output_nav_graphs_phony ${output_nav_graphs_dir}/phony)
   add_custom_command(
