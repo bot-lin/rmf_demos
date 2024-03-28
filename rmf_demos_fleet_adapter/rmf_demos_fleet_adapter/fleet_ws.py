@@ -9,18 +9,28 @@ from rclpy.qos import qos_profile_system_default
 import threading
 import json
 import requests
+import rmf_adapter as adpt
+import sys
+import argparse
+import yaml
+
 class WebSocketNode(Node):
-    def __init__(self):
+    def __init__(self, config):
         super().__init__('websocket_node')
         self.robot_state_publisher_ = self.create_publisher(RobotState, 'robot_state', 10)
         self.create_subscription(PathRequest, 'robot_path_requests', self.task_callback, 10)
         self.websockets = []
+        self.fleet_name = config['rmf_fleet']['name']
+        self.robots = config['rmf_fleet']['robots'].items()
+        self.get_logger().info(f'Fleet name: {self.fleet_name}')
+        self.get_logger().info(f'Robots: {self.robots}')
         self.tasks = {
             'tinyrobot1': []
         }
         self.latest_task_id = {
             'tinyrobot1': ''
         }
+
         self.original_x = -22.9
         self.original_y = -26.6
         self.height = 1021
@@ -111,7 +121,7 @@ class WebSocketNode(Node):
                     "y": map_y
                 },
                 "pyr": {
-                    "yaw": target_yaw
+                    "yaw": -target_yaw
                 },
                 "orientation": {
                     "x": 0,
@@ -136,10 +146,27 @@ def ros2_thread(node):
     rclpy.spin(node)
     print('leaving ros2 thread')
 
-def main(args=None):
-    rclpy.init(args=args)
+def main(argv=sys.argv):
+    rclpy.init(args=argv)
+    adpt.init_rclcpp()
+    args_without_ros = rclpy.utilities.remove_ros_args(argv)
 
-    websocket_node = WebSocketNode()
+    parser = argparse.ArgumentParser(
+        prog='fleet_adapter',
+        description='Configure and spin up the fleet ws node',
+    )
+    parser.add_argument(
+        '-c',
+        '--config_file',
+        type=str,
+        required=True,
+        help='Path to the config.yaml file',
+    )
+    args = parser.parse_args(args_without_ros[1:])
+    with open(args.config_file, 'r') as f:
+        config = yaml.safe_load(f)
+
+    websocket_node = WebSocketNode(config)
     spin_thread = threading.Thread(target=ros2_thread, args=(websocket_node,))
     spin_thread.start()
     websocket_node.run(['ws://10.6.75.222:1234/robot_data'])  # replace with your WebSocket server URIs
@@ -149,4 +176,4 @@ def main(args=None):
     rclpy.shutdown()
 
 if __name__ == '__main__':
-    main()
+    main(sys.argv)
