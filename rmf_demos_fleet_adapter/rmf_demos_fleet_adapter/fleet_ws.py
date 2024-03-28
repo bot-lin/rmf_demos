@@ -39,7 +39,7 @@ class WebSocketNode(Node):
         websocket = await websockets.connect(uri)
         self.websockets.append(websocket)
 
-    async def start(self, uri):
+    async def start(self, robot_name, fleet_name, uri):
         await self.connect_to_websocket(uri)
         seq = 0
         while True:
@@ -81,11 +81,12 @@ class WebSocketNode(Node):
             http_response = requests.get('http://10.6.75.222:1234/confirm_status')
             self.get_logger().info(http_response.text)
 
-    def run(self, uris):
+    def run(self):
         loop = asyncio.get_event_loop()
         tasks = []
-        for uri in uris:
-            task = loop.create_task(self.start(uri))
+        for robot_name, value in self.robots:
+            uri = 'ws://{}/robot_data'.format(value['ip'])
+            task = loop.create_task(self.start(robot_name=robot_name, fleet_name=self.fleet_name, uri=uri))
             tasks.append(task)
         tasks = asyncio.gather(*tasks)
         loop.run_until_complete(tasks)
@@ -169,7 +170,7 @@ def main(argv=sys.argv):
     websocket_node = WebSocketNode(config)
     spin_thread = threading.Thread(target=ros2_thread, args=(websocket_node,))
     spin_thread.start()
-    websocket_node.run(['ws://10.6.75.222:1234/robot_data'])  # replace with your WebSocket server URIs
+    websocket_node.run()  # replace with your WebSocket server URIs
 
 
     websocket_node.destroy_node()
