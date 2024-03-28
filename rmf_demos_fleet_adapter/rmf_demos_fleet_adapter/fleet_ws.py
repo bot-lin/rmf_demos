@@ -29,7 +29,7 @@ class WebSocketNode(Node):
         self.latest_task_id = {
             'tinyrobot1': ''
         }
-        self.get_map_info(self.robots.values()[0]['ip'])
+        self.get_map_info(list(self.robots.values())[0]['ip'])
         self.robot_state_publisher_ = self.create_publisher(RobotState, 'robot_state', 10)
         self.create_subscription(PathRequest, 'robot_path_requests', self.task_callback, 10)
 
