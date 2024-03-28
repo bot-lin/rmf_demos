@@ -21,6 +21,9 @@ class WebSocketNode(Node):
         self.latest_task_id = {
             'tinyrobot1': ''
         }
+        self.original_x = -22.9
+        self.original_y = -26.6
+        self.height = 1021
 
     async def connect_to_websocket(self, uri):
         websocket = await websockets.connect(uri)
@@ -40,7 +43,7 @@ class WebSocketNode(Node):
                 data_ros.task_id = self.latest_task_id[data_ros.name]
                 data_ros.seq = seq 
                 data_ros.mode.mode = 0
-                x, y = self.find_map_in_rmf(float(data_dict['pose']['position']['x']), float(data_dict['pose']['position']['y']))
+                x, y = self.find_map_in_rmf(float(data_dict['pose']['position']['x']), float(data_dict['pose']['position']['y']), origin_x=self.original_x, origin_y=self.original_y, height=self.height)
                 data_ros.battery_percent = float(data_dict['battery'])
                 data_ros.location.x = x
                 data_ros.location.y = y
@@ -100,7 +103,7 @@ class WebSocketNode(Node):
         target_x = msg.path[1].x
         target_y = msg.path[1].y
         target_yaw = msg.path[1].yaw
-        map_x, map_y = self.find_map_in_ros(target_x, target_y)
+        map_x, map_y = self.find_map_in_ros(target_x, target_y, origin_x=self.original_x, origin_y=self.original_y, height=self.height)
         post_data = {
             "pose": {
                 "position": {
