@@ -29,13 +29,16 @@ class WebSocketNode(Node):
         self.latest_task_id = {
             'tinyrobot1': ''
         }
-
-        self.original_x = -22.9
-        self.original_y = -26.6
-        self.height = 1021
+        self.get_map_info(self.robots.values()[0]['ip'])
         self.robot_state_publisher_ = self.create_publisher(RobotState, 'robot_state', 10)
         self.create_subscription(PathRequest, 'robot_path_requests', self.task_callback, 10)
 
+    def get_map_info(self, ip):
+        http_response = requests.get('http://{}/get_map_info'.format(ip))
+        map_info = json.loads(http_response.text)['data']
+        self.original_x = map_info['origin']['position']['x']
+        self.original_y = map_info['origin']['position']['y']
+        self.height = map_info['height']
     def set_robot_fleet_name(self, fleet_name, robot_name,ip):
         post_data = {
             "robot_name": robot_name,
