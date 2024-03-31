@@ -32,6 +32,9 @@ class WebSocketNode(Node):
         self.robot_path = {
             'tinyrobot1': []
         }
+        self.robot_current_path = {
+            'tinyrobot1': None
+        }
         self.get_map_info(list(self.robots.values())[0]['ip'])
         self.robot_state_publisher_ = self.create_publisher(RobotState, 'robot_state', 10)
         self.create_subscription(PathRequest, 'robot_path_requests', self.task_callback, 10)
@@ -80,12 +83,15 @@ class WebSocketNode(Node):
             
             self.confirm_robot_state(data_dict, data_ros.name)
             if data_ros.mode.mode in [0, 1] and len(self.tasks[data_ros.name]) > 0:
+                self.robot_current_path[data_ros.name] = None
                 post_data = self.tasks[data_ros.name][0]
                 http_response = requests.post('http://{}/go_to'.format(self.robots[data_ros.name]['ip']), json=post_data)
                 self.get_logger().info(http_response.text)
                 if json.loads(http_response.text)["code"] == 0:
                     self.tasks[data_ros.name].pop(0)
-                    data_ros.path.append(self.robot_path[data_ros.name].pop(0))
+                    self.robot_current_path[data_ros.name] = self.robot_path[data_ros.name].pop(0)
+            if self.robot_current_path[data_ros.name] is not None:
+                data_ros.path.append(self.robot_current_path[data_ros.name])
             self.robot_state_publisher_.publish(data_ros)
 
 
