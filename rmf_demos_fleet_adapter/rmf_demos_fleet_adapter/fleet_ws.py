@@ -81,7 +81,8 @@ class WebSocketNode(Node):
                 http_response = requests.post('http://{}/go_to'.format(self.robots[data_ros.name]['ip']), json=post_data)
                 self.get_logger().info(http_response.text)
                 if json.loads(http_response.text)["code"] == 0:
-                    data_ros.path.append(self.tasks[data_ros.name].pop(0))
+                    pass
+                    # data_ros.path.append(self.tasks[data_ros.name].pop(0))
             self.robot_state_publisher_.publish(data_ros)
 
 
