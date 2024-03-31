@@ -118,14 +118,6 @@ class WebSocketNode(Node):
         y = temp_y * resolution + origin_y
         return x, y
     
-    def rotate(self, yaw, delta_yaw):
-        new_yaw = yaw + delta_yaw
-        if new_yaw > math.pi:
-            new_yaw -= 2 * math.pi
-        elif new_yaw < -math.pi:
-            new_yaw += 2 * math.pi
-        return new_yaw
-    
     def task_callback(self, msg):
         self.get_logger().info(f"Received task request: {msg}")
         # self.get_logger().info(f'navigation: path_request.task_id: {path_request.task_id}')
@@ -140,8 +132,7 @@ class WebSocketNode(Node):
                     "y": map_y
                 },
                 "pyr": {
-                    "yaw": self.rotate(target_yaw, math.pi)
-                },
+                    "yaw": target_yaw,
                 "orientation": {
                     "x": 0,
                     "y": 0,
