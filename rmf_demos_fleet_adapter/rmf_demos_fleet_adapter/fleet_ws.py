@@ -74,14 +74,16 @@ class WebSocketNode(Node):
                 case 'paused': data_ros.mode.mode = 3
                 case 'waiting': data_ros.mode.mode = 4
             data_ros.location.t = self.get_clock().now().to_msg()
-            self.robot_state_publisher_.publish(data_ros)
+            
             self.confirm_robot_state(data_dict, data_ros.name)
             if data_ros.mode.mode in [0, 1] and len(self.tasks[data_ros.name]) > 0:
                 post_data = self.tasks[data_ros.name][0]
                 http_response = requests.post('http://{}/go_to'.format(self.robots[data_ros.name]['ip']), json=post_data)
                 self.get_logger().info(http_response.text)
                 if json.loads(http_response.text)["code"] == 0:
-                    self.tasks[data_ros.name].pop(0)
+                    data_ros.path.append(self.tasks[data_ros.name].pop(0))
+            self.robot_state_publisher_.publish(data_ros)
+
 
 
     def confirm_robot_state(self, data_dict, robot_name):
@@ -118,6 +120,7 @@ class WebSocketNode(Node):
         y = temp_y * resolution + origin_y
         return x, y
     
+    
     def task_callback(self, msg):
         self.get_logger().info(f"Received task request: {msg}")
         # self.get_logger().info(f'navigation: path_request.task_id: {path_request.task_id}')
@@ -132,7 +135,8 @@ class WebSocketNode(Node):
                     "y": map_y
                 },
                 "pyr": {
-                    "yaw": target_yaw,
+                    "yaw": target_yaw
+                },
                 "orientation": {
                     "x": 0,
                     "y": 0,
