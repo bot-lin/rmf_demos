@@ -119,6 +119,17 @@ class RobotModel:
             if distance < threshold:
                 return True
         return False
+    
+    def check_robot_mode(self, data_dict):
+        eps = 0.01
+        speed = data_dict['speed']
+        stationary = abs(speed['linear']) < eps and abs(speed['angular']) < eps
+        if stationary:
+            return 0
+        else:
+            return 1
+
+
 
     async def start(self, uri):
         # await self.connect_to_websocket(uri)
@@ -139,12 +150,8 @@ class RobotModel:
             data_ros.location.y = y
             data_ros.location.yaw = float(data_dict['pose']['pyr']['yaw'])
             data_ros.location.level_name = 'L1'
-            match data_dict['robot_mode']:
-                case 'idle': data_ros.mode.mode = 0
-                case 'charging': data_ros.mode.mode = 1
-                case 'moving': data_ros.mode.mode = 2
-                case 'paused': data_ros.mode.mode = 3
-                case 'waiting': data_ros.mode.mode = 4
+            data_ros.mode.mode = self.check_robot_mode(data_dict)
+     
             data_ros.location.t = self.node.get_clock().now().to_msg()
             if self.close_enough_to_goal(x, y):
                 self.path_remaining.pop(0)
