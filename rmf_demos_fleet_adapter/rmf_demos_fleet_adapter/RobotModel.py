@@ -23,6 +23,7 @@ class RobotModel:
     def set_path_remaining(self, path, task_id):
         self.task_id = task_id
         self.path_remaining.append(path)
+        self.post_dest_to_robot()
 
     def get_map_info(self):
         try:
@@ -94,7 +95,7 @@ class RobotModel:
             "precision_yaw": 0.1,
             "is_reverse": False,
             "nav_type": "auto",
-            "task_id": str(msg.task_id),
+            "task_id": str(self.task_id),
             "inflation_radius": 1.1
         }
         http_response = requests.post('http://{}/go_to_simple'.format(self.ip), json=post_data)
