@@ -15,16 +15,7 @@ import argparse
 import yaml
 import math
 
-class RobotModle:
-    def __init__(self):
-        self.path_remaining = []
-        self.task_id = ''
-        self.connected = False
-        self.pose = None
-        self.fleet_name = ''
-    
-    def __str__(self):
-        return f'RobotModel: {self.__dict__}'
+from .RobotModel import RobotModel
 
 class WebSocketNode(Node):
     def __init__(self, config):
@@ -45,35 +36,16 @@ class WebSocketNode(Node):
         self.robot_current_path = {
             'tinyrobot1': None
         }
-        self.get_map_info(list(self.robots.values())[0].ip)
         self.robot_state_publisher_ = self.create_publisher(RobotState, 'robot_state', 10)
         self.create_subscription(PathRequest, 'robot_path_requests', self.task_callback, 10)
     
     def generate_robot_model(self, config):
         robots = {}
         for robot_name, value in config.items():
-            robot = RobotModle()
-            robot.ip = value['ip']
-            robot.pose = None
-            robot.connected = False
-            robot.fleet_name = self.fleet_name
+            robot = RobotModel(value['ip'], self.fleet_name, robot_name, self)
             robots[robot_name] = robot
         return robots
 
-    def get_map_info(self, ip):
-        http_response = requests.get('http://{}/get_map_info'.format(ip))
-        map_info = json.loads(http_response.text)['data']
-        self.original_x = map_info['origin']['position']['x']
-        self.original_y = map_info['origin']['position']['y']
-        self.height = map_info['height']
-
-    def set_robot_fleet_name(self, fleet_name, robot_name,ip):
-        post_data = {
-            "robot_name": robot_name,
-            "fleet_name": fleet_name
-        }
-        http_response = requests.post('http://{}/set_fleet_name'.format(ip), json=post_data)
-        self.get_logger().info(http_response.text)
 
     async def start(self, uri):
         # await self.connect_to_websocket(uri)
@@ -128,65 +100,17 @@ class WebSocketNode(Node):
         loop = asyncio.get_event_loop()
         tasks = []
         for robot_name, value in self.robots.items():
-            self.set_robot_fleet_name(fleet_name=self.fleet_name, robot_name=robot_name, ip=value['ip'])
-            uri = 'ws://{}/robot_data'.format(value['ip'])
-            task = loop.create_task(self.start(uri=uri))
+            uri = 'ws://{}/robot_data'.format(value.ip)
+            task = loop.create_task(value.start(uri=uri))
             tasks.append(task)
         tasks = asyncio.gather(*tasks)
-        loop.run_until_complete(tasks)
-        
-    def find_map_in_rmf(self, given_x, given_y, resolution=0.05, origin_x=-24.5, origin_y=-28.9, height=896):
-        temp_x = given_x - origin_x
-        temp_y = given_y - origin_y
-        map_x = int(temp_x / resolution)
-        map_y = int(temp_y / resolution)
-        temp_y = height - map_y
-        x = map_x * resolution
-        y = - temp_y * resolution
-        return x, y
-    
-    def find_map_in_ros(self, given_x, given_y, resolution=0.05, origin_x=-24.5, origin_y=-28.9, height=896):
-        x = given_x + origin_x
-        map_y = - given_y / resolution
-        temp_y = height - map_y
-        y = temp_y * resolution + origin_y
-        return x, y
-    
+        loop.run_until_complete(tasks)    
     
     def task_callback(self, msg):
         self.get_logger().info(f"Received task request: {msg}")
         # self.get_logger().info(f'navigation: path_request.task_id: {path_request.task_id}')
-        target_x = msg.path[1].x
-        target_y = msg.path[1].y
-        target_yaw = msg.path[1].yaw
-        map_x, map_y = self.find_map_in_ros(target_x, target_y, origin_x=self.original_x, origin_y=self.original_y, height=self.height)
-        post_data = {
-            "pose": {
-                "position": {
-                    "x": map_x,
-                    "y": map_y
-                },
-                "pyr": {
-                    "yaw": target_yaw
-                },
-                "orientation": {
-                    "x": 0,
-                    "y": 0,
-                    "z": 0,
-                    "w": 1
-                }
-            },
-            "use_pyr": True,
-            "precision_xy": 0.1,
-            "precision_yaw": 0.1,
-            "is_reverse": False,
-            "nav_type": "auto",
-            "task_id": str(msg.task_id),
-            "inflation_radius": 1.1
-        }
-        self.tasks[msg.robot_name].append(post_data)
-        self.latest_task_id[msg.robot_name] = str(msg.task_id)
-        self.robot_path[msg.robot_name].append(msg.path[1])
+        self.robots[msg.robot_name].set_path_remaining(msg.path[1])
+
         
 def ros2_thread(node):
     print('entering ros2 thread')
