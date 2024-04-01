@@ -99,6 +99,7 @@ class RobotModel:
         }
         http_response = requests.post('http://{}/go_to_simple'.format(self.ip), json=post_data)
         if json.loads(http_response.text)["code"] == 0:
+            pass
 
     async def start(self, uri):
         # await self.connect_to_websocket(uri)
