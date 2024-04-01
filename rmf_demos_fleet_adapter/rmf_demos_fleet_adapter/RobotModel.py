@@ -20,7 +20,8 @@ class RobotModel:
     def __str__(self):
         return f'RobotModel: {self.__dict__}'
     
-    def set_path_remaining(self, path):
+    def set_path_remaining(self, path, task_id):
+        self.task_id = task_id
         self.path_remaining.append(path)
 
     def get_map_info(self):
@@ -96,6 +97,8 @@ class RobotModel:
             "task_id": str(msg.task_id),
             "inflation_radius": 1.1
         }
+        http_response = requests.post('http://{}/go_to_simple'.format(self.ip), json=post_data)
+        if json.loads(http_response.text)["code"] == 0:
 
     async def start(self, uri):
         # await self.connect_to_websocket(uri)
@@ -108,9 +111,8 @@ class RobotModel:
             data_ros = RobotState()
             data_ros.name = data_dict['robot_name']
             data_ros.model = data_dict['fleet_name']
-            data_ros.task_id = ''
+            data_ros.task_id = self.task_id
             data_ros.seq = seq 
-            data_ros.mode.mode = 0
             x, y = self.find_map_in_rmf(float(data_dict['pose']['position']['x']), float(data_dict['pose']['position']['y']), origin_x=self.original_x, origin_y=self.original_y, height=self.height)
             data_ros.battery_percent = float(data_dict['battery'])
             data_ros.location.x = x
@@ -124,8 +126,9 @@ class RobotModel:
                 case 'paused': data_ros.mode.mode = 3
                 case 'waiting': data_ros.mode.mode = 4
             data_ros.location.t = self.node.get_clock().now().to_msg()
+            data_ros.path = self.path_remaining
             
-            self.confirm_robot_state(data_dict, data_ros.name)
+            # self.confirm_robot_state(data_dict, data_ros.name)
             # if data_ros.mode.mode in [0, 1] and len(self.tasks[data_ros.name]) > 0:
             #     self.robot_current_path[data_ros.name] = None
             #     post_data = self.tasks[data_ros.name][0]

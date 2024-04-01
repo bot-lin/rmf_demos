@@ -36,7 +36,6 @@ class WebSocketNode(Node):
         self.robot_current_path = {
             'tinyrobot1': None
         }
-        self.robot_state_publisher_ = self.create_publisher(RobotState, 'robot_state', 10)
         self.create_subscription(PathRequest, 'robot_path_requests', self.task_callback, 10)
     
     def generate_robot_model(self, config):
@@ -46,51 +45,6 @@ class WebSocketNode(Node):
             robots[robot_name] = robot
         return robots
 
-
-    async def start(self, uri):
-        # await self.connect_to_websocket(uri)
-        websocket = await websockets.connect(uri)
-        seq = 0
-        while True:
-            seq += 1
-            message = await websocket.recv()
-            data_dict = json.loads(message)
-            data_ros = RobotState()
-            data_ros.name = data_dict['robot_name']
-            data_ros.model = data_dict['fleet_name']
-            data_ros.task_id = self.latest_task_id[data_ros.name]
-            data_ros.seq = seq 
-            data_ros.mode.mode = 0
-            x, y = self.find_map_in_rmf(float(data_dict['pose']['position']['x']), float(data_dict['pose']['position']['y']), origin_x=self.original_x, origin_y=self.original_y, height=self.height)
-            data_ros.battery_percent = float(data_dict['battery'])
-            data_ros.location.x = x
-            data_ros.location.y = y
-            data_ros.location.yaw = float(data_dict['pose']['pyr']['yaw'])
-            data_ros.location.level_name = 'L1'
-            match data_dict['robot_mode']:
-                case 'idle': data_ros.mode.mode = 0
-                case 'charging': data_ros.mode.mode = 1
-                case 'moving': data_ros.mode.mode = 2
-                case 'paused': data_ros.mode.mode = 3
-                case 'waiting': data_ros.mode.mode = 4
-            data_ros.location.t = self.get_clock().now().to_msg()
-            
-            self.confirm_robot_state(data_dict, data_ros.name)
-            if data_ros.mode.mode in [0, 1] and len(self.tasks[data_ros.name]) > 0:
-                self.robot_current_path[data_ros.name] = None
-                post_data = self.tasks[data_ros.name][0]
-                http_response = requests.post('http://{}/go_to'.format(self.robots[data_ros.name]['ip']), json=post_data)
-                self.get_logger().info(http_response.text)
-                if json.loads(http_response.text)["code"] == 0:
-                    self.tasks[data_ros.name].pop(0)
-                    self.robot_current_path[data_ros.name] = self.robot_path[data_ros.name].pop(0)
-            if self.robot_current_path[data_ros.name] is not None:
-                data_ros.path.append(self.robot_current_path[data_ros.name])
-            self.robot_state_publisher_.publish(data_ros)
-
-
-
-    
 
     def run(self):
         loop = asyncio.get_event_loop()
@@ -105,7 +59,7 @@ class WebSocketNode(Node):
     def task_callback(self, msg):
         self.get_logger().info(f"Received task request: {msg}")
         # self.get_logger().info(f'navigation: path_request.task_id: {path_request.task_id}')
-        self.robots[msg.robot_name].set_path_remaining(msg.path[1])
+        self.robots[msg.robot_name].set_path_remaining(msg.path[1], task_id=msg.task_id)
 
         
 def ros2_thread(node):
