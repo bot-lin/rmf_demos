@@ -102,7 +102,7 @@ class RobotModel:
             data_ros = RobotState()
             data_ros.name = data_dict['robot_name']
             data_ros.model = data_dict['fleet_name']
-            data_ros.task_id = self.latest_task_id[data_ros.name]
+            data_ros.task_id = ''
             data_ros.seq = seq 
             data_ros.mode.mode = 0
             x, y = self.find_map_in_rmf(float(data_dict['pose']['position']['x']), float(data_dict['pose']['position']['y']), origin_x=self.original_x, origin_y=self.original_y, height=self.height)
