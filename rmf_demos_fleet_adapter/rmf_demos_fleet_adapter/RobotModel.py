@@ -111,7 +111,7 @@ class RobotModel:
         if json.loads(http_response.text)["code"] == 0:
             pass
 
-    def close_enough_to_goal(self, x1, y1, threshold=0.1):
+    def close_enough_to_goal(self, x1, y1, threshold=0.4):
         if len(self.path_remaining) > 0:
             x2 = self.path_remaining[0].x
             y2 = self.path_remaining[0].y
