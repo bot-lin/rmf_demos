@@ -50,14 +50,15 @@ class WebSocketNode(Node):
         self.create_subscription(PathRequest, 'robot_path_requests', self.task_callback, 10)
     
     def generate_robot_model(self, config):
-        self.robots = {}
+        robots = {}
         for robot_name, value in config.items():
             robot = RobotModle()
             robot.ip = value['ip']
             robot.pose = None
             robot.connected = False
             robot.fleet_name = self.fleet_name
-            self.robots[robot_name] = robot
+            robots[robot_name] = robot
+        return robots
 
     def get_map_info(self, ip):
         http_response = requests.get('http://{}/get_map_info'.format(ip))
