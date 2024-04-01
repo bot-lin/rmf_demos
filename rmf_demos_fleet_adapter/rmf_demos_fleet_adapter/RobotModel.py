@@ -155,7 +155,7 @@ class RobotModel:
             data_ros.location.t = self.node.get_clock().now().to_msg()
             if self.close_enough_to_goal(x, y):
                 self.path_remaining.pop(0)
-                self.task_id = ''
+                # self.task_id = ''
             data_ros.path = self.path_remaining
             data_ros.task_id = self.task_id
             
