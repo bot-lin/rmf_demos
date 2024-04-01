@@ -13,6 +13,7 @@ class RobotModel:
         self.robot_name = robot_name
         self.ip = ip
         self.node = node    
+        self.robot_state_publisher_ = self.node.create_publisher(RobotState, 'robot_state', 10)
         self.get_map_info()
         self.set_robot_fleet_name()
     
