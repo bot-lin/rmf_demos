@@ -50,6 +50,7 @@ class WebSocketNode(Node):
         self.create_subscription(PathRequest, 'robot_path_requests', self.task_callback, 10)
     
     def generate_robot_model(self, config):
+        self.robots = {}
         for robot_name, value in config.items():
             robot = RobotModle()
             robot.ip = value['ip']
