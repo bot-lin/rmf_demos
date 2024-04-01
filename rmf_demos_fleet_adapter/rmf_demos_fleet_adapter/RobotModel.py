@@ -20,10 +20,18 @@ class RobotModel:
     def __str__(self):
         return f'RobotModel: {self.__dict__}'
     
+    def path_request_valid(self, path, task_id):
+        if len(path) == 0:
+            return False
+        if task_id == self.task_id:
+            return False
+        return True
+    
     def set_path_remaining(self, path, task_id):
-        self.task_id = task_id
-        self.path_remaining.append(path)
-        self.post_dest_to_robot()
+        if self.path_request_valid(path, task_id):
+            self.task_id = task_id
+            self.path_remaining.append(path[-1])
+            self.post_dest_to_robot()
 
     def get_map_info(self):
         try:
@@ -103,6 +111,15 @@ class RobotModel:
         if json.loads(http_response.text)["code"] == 0:
             pass
 
+    def close_enough_to_goal(self, x1, y1, threshold=0.1):
+        if len(self.path_remaining) > 0:
+            x2 = self.path_remaining[0].x
+            y2 = self.path_remaining[0].y
+            distance = ((x1 - x2)**2 + (y1 - y2)**2)**0.5
+            if distance < threshold:
+                return True
+        return False
+
     async def start(self, uri):
         # await self.connect_to_websocket(uri)
         websocket = await websockets.connect(uri)
@@ -114,7 +131,7 @@ class RobotModel:
             data_ros = RobotState()
             data_ros.name = data_dict['robot_name']
             data_ros.model = data_dict['fleet_name']
-            data_ros.task_id = self.task_id
+            
             data_ros.seq = seq 
             x, y = self.find_map_in_rmf(float(data_dict['pose']['position']['x']), float(data_dict['pose']['position']['y']), origin_x=self.original_x, origin_y=self.original_y, height=self.height)
             data_ros.battery_percent = float(data_dict['battery'])
@@ -129,7 +146,11 @@ class RobotModel:
                 case 'paused': data_ros.mode.mode = 3
                 case 'waiting': data_ros.mode.mode = 4
             data_ros.location.t = self.node.get_clock().now().to_msg()
+            if self.close_enough_to_goal(x, y):
+                self.path_remaining.pop(0)
+                self.task_id = ''
             data_ros.path = self.path_remaining
+            data_ros.task_id = self.task_id
             
             # self.confirm_robot_state(data_dict, data_ros.name)
             # if data_ros.mode.mode in [0, 1] and len(self.tasks[data_ros.name]) > 0:

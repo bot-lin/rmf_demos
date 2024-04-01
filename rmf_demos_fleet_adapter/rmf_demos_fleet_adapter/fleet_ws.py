@@ -24,18 +24,6 @@ class WebSocketNode(Node):
         self.fleet_name = config['rmf_fleet']['name']
         self.robots = self.generate_robot_model(config['rmf_fleet']['robots'])
         self.get_logger().info(f'Robots: {self.robots}')
-        self.tasks = {
-            'tinyrobot1': []
-        }
-        self.latest_task_id = {
-            'tinyrobot1': ''
-        }
-        self.robot_path = {
-            'tinyrobot1': []
-        }
-        self.robot_current_path = {
-            'tinyrobot1': None
-        }
         self.create_subscription(PathRequest, 'robot_path_requests', self.task_callback, 10)
     
     def generate_robot_model(self, config):
@@ -59,7 +47,7 @@ class WebSocketNode(Node):
     def task_callback(self, msg):
         self.get_logger().info(f"Received task request: {msg}")
         # self.get_logger().info(f'navigation: path_request.task_id: {path_request.task_id}')
-        self.robots[msg.robot_name].set_path_remaining(msg.path[1], task_id=msg.task_id)
+        self.robots[msg.robot_name].set_path_remaining(msg.path, task_id=msg.task_id)
 
         
 def ros2_thread(node):
