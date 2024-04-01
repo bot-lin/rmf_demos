@@ -126,15 +126,15 @@ class RobotModel:
             data_ros.location.t = self.node.get_clock().now().to_msg()
             
             self.confirm_robot_state(data_dict, data_ros.name)
-            if data_ros.mode.mode in [0, 1] and len(self.tasks[data_ros.name]) > 0:
-                self.robot_current_path[data_ros.name] = None
-                post_data = self.tasks[data_ros.name][0]
-                http_response = requests.post('http://{}/go_to'.format(self.robots[data_ros.name]['ip']), json=post_data)
-                self.get_logger().info(http_response.text)
-                if json.loads(http_response.text)["code"] == 0:
-                    self.tasks[data_ros.name].pop(0)
-                    self.robot_current_path[data_ros.name] = self.robot_path[data_ros.name].pop(0)
-            if self.robot_current_path[data_ros.name] is not None:
-                data_ros.path.append(self.robot_current_path[data_ros.name])
+            # if data_ros.mode.mode in [0, 1] and len(self.tasks[data_ros.name]) > 0:
+            #     self.robot_current_path[data_ros.name] = None
+            #     post_data = self.tasks[data_ros.name][0]
+            #     http_response = requests.post('http://{}/go_to'.format(self.robots[data_ros.name]['ip']), json=post_data)
+            #     self.get_logger().info(http_response.text)
+            #     if json.loads(http_response.text)["code"] == 0:
+            #         self.tasks[data_ros.name].pop(0)
+            #         self.robot_current_path[data_ros.name] = self.robot_path[data_ros.name].pop(0)
+            # if self.robot_current_path[data_ros.name] is not None:
+            #     data_ros.path.append(self.robot_current_path[data_ros.name])
             self.robot_state_publisher_.publish(data_ros)
 
