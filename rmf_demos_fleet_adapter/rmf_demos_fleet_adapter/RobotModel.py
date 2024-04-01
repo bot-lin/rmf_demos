@@ -117,7 +117,7 @@ class RobotModel:
                 case 'moving': data_ros.mode.mode = 2
                 case 'paused': data_ros.mode.mode = 3
                 case 'waiting': data_ros.mode.mode = 4
-            data_ros.location.t = self.get_clock().now().to_msg()
+            data_ros.location.t = self.node.get_clock().now().to_msg()
             
             self.confirm_robot_state(data_dict, data_ros.name)
             if data_ros.mode.mode in [0, 1] and len(self.tasks[data_ros.name]) > 0:
