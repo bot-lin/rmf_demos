@@ -44,6 +44,12 @@ class RobotModel:
             self.get_logger().info(http_response.text)
         except:
             self.connected = False
+
+    def confirm_robot_state(self, data_dict, robot_name):
+        if data_dict['fsm'] in ['succeeded', 'canceled', 'failed']:
+            ip = self.robots[robot_name]['ip']
+            http_response = requests.get('http://{}/confirm_status'.format(ip))
+            self.get_logger().info(http_response.text)
     
     def find_map_in_ros(self, given_x, given_y, resolution=0.05, origin_x=-24.5, origin_y=-28.9, height=896):
         x = given_x + origin_x

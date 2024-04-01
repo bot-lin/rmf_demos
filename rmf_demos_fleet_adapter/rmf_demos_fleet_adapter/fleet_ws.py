@@ -90,11 +90,7 @@ class WebSocketNode(Node):
 
 
 
-    def confirm_robot_state(self, data_dict, robot_name):
-        if data_dict['fsm'] in ['succeeded', 'canceled', 'failed']:
-            ip = self.robots[robot_name]['ip']
-            http_response = requests.get('http://{}/confirm_status'.format(ip))
-            self.get_logger().info(http_response.text)
+    
 
     def run(self):
         loop = asyncio.get_event_loop()
