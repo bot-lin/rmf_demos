@@ -15,13 +15,23 @@ import argparse
 import yaml
 import math
 
+class RobotModle:
+    def __init__(self):
+        self.path_remaining = []
+        self.task_id = ''
+        self.connected = False
+        self.pose = None
+        self.fleet_name = ''
+    
+    def __str__(self):
+        return f'RobotModel: {self.__dict__}'
+
 class WebSocketNode(Node):
     def __init__(self, config):
         super().__init__('websocket_node')
         
         self.fleet_name = config['rmf_fleet']['name']
-        self.robots = config['rmf_fleet']['robots']
-        self.get_logger().info(f'Fleet name: {self.fleet_name}')
+        self.robots = self.generate_robot_model(config['rmf_fleet']['robots'])
         self.get_logger().info(f'Robots: {self.robots}')
         self.tasks = {
             'tinyrobot1': []
@@ -35,9 +45,18 @@ class WebSocketNode(Node):
         self.robot_current_path = {
             'tinyrobot1': None
         }
-        self.get_map_info(list(self.robots.values())[0]['ip'])
+        self.get_map_info(list(self.robots.values())[0].ip)
         self.robot_state_publisher_ = self.create_publisher(RobotState, 'robot_state', 10)
         self.create_subscription(PathRequest, 'robot_path_requests', self.task_callback, 10)
+    
+    def generate_robot_model(self, config):
+        for robot_name, value in config.items():
+            robot = RobotModle()
+            robot.ip = value['ip']
+            robot.pose = None
+            robot.connected = False
+            robot.fleet_name = self.fleet_name
+            self.robots[robot_name] = robot
 
     def get_map_info(self, ip):
         http_response = requests.get('http://{}/get_map_info'.format(ip))
@@ -45,6 +64,7 @@ class WebSocketNode(Node):
         self.original_x = map_info['origin']['position']['x']
         self.original_y = map_info['origin']['position']['y']
         self.height = map_info['height']
+
     def set_robot_fleet_name(self, fleet_name, robot_name,ip):
         post_data = {
             "robot_name": robot_name,
