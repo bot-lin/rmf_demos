@@ -321,6 +321,22 @@ class FleetManager(Node):
             response['data'] = self.action_paths[activity][label]
             response['success'] = True
             return response
+        
+        @app.post(
+            '/open-rmf/rmf_demos_fm/start_nest_action/', response_mdoel=Response
+        )
+        async def start_nest_action(
+            robot_name: str, cmd_id: int, request: Request
+        ):
+            self.get_logger().info('start nest action: {}'.format(robot_name))
+            response = {'success': False, 'msg': ''}
+            if robot_name not in self.robots:
+                return response
+            robot = self.robots[robot_name]
+            action_id = request.data['action_id']
+            self.get_logger().info('action_id: {}'.format(action_id))
+            response['success'] = True
+            return response
 
         @app.post(
             '/open-rmf/rmf_demos_fm/start_activity/', response_model=Response

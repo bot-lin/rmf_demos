@@ -151,6 +151,25 @@ class RobotAPI:
         except Exception as err:
             print(f'Other error for {robot_name} in stop: {err}')
         return False
+    
+    def start_nest_action(self, robot_name: str, cmd_id: int, action_id: str):
+        url = (
+            self.prefix
+            + f'/open-rmf/rmf_demos_fm/start_nest_action?robot_name={robot_name}'
+            f'&cmd_id={cmd_id}'
+        )
+        data = {'action_id': action_id}
+        try:
+            response = requests.post(url, timeout=self.timeout, json=data)
+            response.raise_for_status()
+            if self.debug:
+                print(f'Response: {response.json()}')
+            return response.json()['success']
+        except HTTPError as http_err:
+            print(f'HTTP error for {robot_name} in start_nest_action: {http_err}')
+        except Exception as err:
+            print(f'Other error {robot_name} in start_nest_action: {err}')
+        return False
 
     def toggle_teleop(self, robot_name: str, toggle: bool):
         """

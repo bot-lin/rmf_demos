@@ -264,6 +264,10 @@ class RobotAdapter:
                 self.attempt_cmd_until_success(
                     cmd=self.perform_clean, args=(description['zone'],)
                 )
+            case 'nest_action':
+                self.attempt_cmd_until_success(
+                    cmd=self.api.start_nest_action, args=(self.name, self.cmd_id, description['action_id'],)
+                )
 
     def finish_action(self):
         # This is triggered by a ModeRequest callback which allows human
@@ -297,6 +301,7 @@ class RobotAdapter:
                     destination.map,
                     destination.speed_limit,
                 )
+            
 
     def perform_clean(self, zone):
         match self.api.start_activity(self.name, self.cmd_id, 'clean', zone):
