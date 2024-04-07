@@ -60,6 +60,7 @@ class Request(BaseModel):
     data: Optional[dict] = None
     speed_limit: Optional[float] = None
     toggle: Optional[bool] = None
+    action_id: Optional[int] = None
 
 
 class Response(BaseModel):
