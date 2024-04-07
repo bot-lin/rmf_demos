@@ -333,7 +333,7 @@ class FleetManager(Node):
             if robot_name not in self.robots:
                 return response
             robot = self.robots[robot_name]
-            action_id = request.data['action_id']
+            action_id = request.action_id
             self.get_logger().info('action_id: {}'.format(action_id))
             response['success'] = True
             return response
