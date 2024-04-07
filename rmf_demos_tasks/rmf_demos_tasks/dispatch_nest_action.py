@@ -122,7 +122,7 @@ class TaskRequester(Node):
 
         # Define task request description with phases
         description = {}  # task_description_Compose.json
-        description['category'] = 'teleop'
+        description['category'] = 'nest_action'
         description['phases'] = []
         activities = []
         # Add activities
