@@ -323,7 +323,7 @@ class FleetManager(Node):
             return response
         
         @app.post(
-            '/open-rmf/rmf_demos_fm/start_nest_action/', response_mdoel=Response
+            '/open-rmf/rmf_demos_fm/start_nest_action/', response_model=Response
         )
         async def start_nest_action(
             robot_name: str, cmd_id: int, request: Request
