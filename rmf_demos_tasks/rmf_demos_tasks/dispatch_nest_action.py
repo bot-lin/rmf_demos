@@ -97,7 +97,7 @@ class TaskRequester(Node):
 
         # Construct task
         msg = ApiRequest()
-        msg.request_id = 'teleop_' + str(uuid.uuid4())
+        msg.request_id = 'nest_action_' + str(uuid.uuid4())
         payload = {}
         if self.args.fleet and self.args.robot:
             payload['type'] = 'robot_task_request'
