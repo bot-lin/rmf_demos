@@ -39,7 +39,7 @@ class WebSocketNode(Node):
         loop = asyncio.get_event_loop()
         tasks = []
         for robot_name, value in self.robots.items():
-            uri = 'ws://{}/robot_data'.format(value.ip)
+            uri = 'ws://{}:1234/robot_data'.format(value.ip)
             task = loop.create_task(value.start(uri=uri))
             tasks.append(task)
         tasks = asyncio.gather(*tasks)
