@@ -35,7 +35,7 @@ class RobotModel:
     
     def start_nest_action(self, action_id, cmd_id):
         http_response = requests.get('http://{}:5000/deploy/executeAction/{}/{}'.format(self.ip, action_id, cmd_id))
-        self.node.get_logger().info(http_response.json())
+        self.node.get_logger().info("{}".format(http_response.text))
 
 
 
