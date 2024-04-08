@@ -48,7 +48,7 @@ class WebSocketNode(Node):
     def nest_action_callback(self, msg):
         self.get_logger().info(f"Received nest_action_callback request: {msg}")
         data = json.loads(msg.data)
-        self.robots[data['robot_name']].start_nest_action(data['action_id'], data['task_id'])
+        self.robots[data['robot_name']].start_nest_action(data['action_id'], data['cmd_id'])
     
     def task_callback(self, msg):
         self.get_logger().info(f"Received task request: {msg}")

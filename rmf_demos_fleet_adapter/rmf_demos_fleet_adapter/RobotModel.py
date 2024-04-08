@@ -33,8 +33,8 @@ class RobotModel:
             self.path_remaining.append(path[-1])
             self.post_dest_to_robot()
     
-    def start_nest_action(self, action_id, task_id):
-        http_response = requests.get('http://{}:5000/deploy/executeAction/{}/{}'.format(self.ip, action_id, task_id))
+    def start_nest_action(self, action_id, cmd_id):
+        http_response = requests.get('http://{}:5000/deploy/executeAction/{}/{}'.format(self.ip, action_id, cmd_id))
         self.node.get_logger().info(http_response.json())
 
 
