@@ -25,6 +25,7 @@ class WebSocketNode(Node):
         self.robots = self.generate_robot_model(config['rmf_fleet']['robots'])
         self.get_logger().info(f'Robots: {self.robots}')
         self.create_subscription(PathRequest, 'robot_path_requests', self.task_callback, 10)
+        self.create_subscription(String, 'nest_action_requests', self.nest_action_callback, 10)
     
     def generate_robot_model(self, config):
         robots = {}
@@ -42,7 +43,12 @@ class WebSocketNode(Node):
             task = loop.create_task(value.start(uri=uri))
             tasks.append(task)
         tasks = asyncio.gather(*tasks)
-        loop.run_until_complete(tasks)    
+        loop.run_until_complete(tasks)   
+
+    def nest_action_callback(self, msg):
+        self.get_logger().info(f"Received nest_action_callback request: {msg}")
+        data = json.loads(msg.data)
+        self.robots[data['robot_name']].start_nest_action(data['action_id'], data['task_id'])
     
     def task_callback(self, msg):
         self.get_logger().info(f"Received task request: {msg}")

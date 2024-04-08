@@ -44,6 +44,7 @@ from rmf_fleet_msgs.msg import Location
 from rmf_fleet_msgs.msg import PathRequest
 from rmf_fleet_msgs.msg import RobotMode
 from rmf_fleet_msgs.msg import RobotState
+from std_msgs.msg import String
 import socketio
 import uvicorn
 import yaml
@@ -193,6 +194,12 @@ class FleetManager(Node):
             qos_profile=qos_profile_system_default,
         )
 
+        self.nest_action_pub = self.create_publisher(
+            String,
+            'nest_action_requests',
+            qos_profile=qos_profile_system_default,
+        )
+
         @app.get('/open-rmf/rmf_demos_fm/status/', response_model=Response)
         async def status(robot_name: Optional[str] = None):
             response = {'data': {}, 'success': False, 'msg': ''}
@@ -336,6 +343,12 @@ class FleetManager(Node):
             robot = self.robots[robot_name]
             action_id = request.action_id
             self.get_logger().info('action_id: {}'.format(action_id))
+            data = {
+                "robot_name": robot_name,
+                "cmd_id": cmd_id,
+                "action_id": action_id,
+            }
+            self.nest_action_pub.publish(String(data=json.dumps(data)))
             response['success'] = True
             return response
 

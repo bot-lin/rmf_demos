@@ -32,10 +32,16 @@ class RobotModel:
             self.task_id = task_id
             self.path_remaining.append(path[-1])
             self.post_dest_to_robot()
+    
+    def start_nest_action(self, action_id, task_id):
+        http_response = requests.get('http://{}:5000/deploy/executeAction/{}/{}'.format(self.ip, action_id, task_id))
+        self.node.get_logger().info(http_response.json())
+
+
 
     def get_map_info(self):
         try:
-            http_response = requests.get('http://{}/get_map_info'.format(self.ip))
+            http_response = requests.get('http://{}:1234/get_map_info'.format(self.ip))
             map_info = json.loads(http_response.text)['data']
             self.original_x = map_info['origin']['position']['x']
             self.original_y = map_info['origin']['position']['y']
@@ -50,14 +56,14 @@ class RobotModel:
                 "robot_name": self.robot_name,
                 "fleet_name": self.fleet_name
             }
-            http_response = requests.post('http://{}/set_fleet_name'.format(self.ip), json=post_data)
+            http_response = requests.post('http://{}:1234/set_fleet_name'.format(self.ip), json=post_data)
             self.get_logger().info(http_response.text)
         except:
             self.connected = False
 
     def confirm_robot_state(self, data_dict, robot_name):
         if data_dict['fsm'] in ['succeeded', 'canceled', 'failed']:
-            http_response = requests.get('http://{}/confirm_status'.format(self.ip))
+            http_response = requests.get('http://{}:1234/confirm_status'.format(self.ip))
             self.node.get_logger().info(http_response.text)
     
     def find_map_in_ros(self, given_x, given_y, resolution=0.05, origin_x=-24.5, origin_y=-28.9, height=896):
@@ -106,7 +112,7 @@ class RobotModel:
             "task_id": str(self.task_id),
             "inflation_radius": 1.1
         }
-        http_response = requests.post('http://{}/go_to_simple'.format(self.ip), json=post_data)
+        http_response = requests.post('http://{}:1234/go_to_simple'.format(self.ip), json=post_data)
         self.node.get_logger().info(http_response.text)
         if json.loads(http_response.text)["code"] == 0:
             pass
