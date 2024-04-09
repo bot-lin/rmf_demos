@@ -254,7 +254,7 @@ class RobotAdapter:
         self.cmd_id += 1
         self.execution = execution
         self.node.get_logger().info(
-            "-----------fleet adapter execute action-----------"
+            "-----------fleet adapter execute action-----------")
         self.node.get_logger().info(
             f'Commanding [{self.name}] to execute action [{category}]'
         )
