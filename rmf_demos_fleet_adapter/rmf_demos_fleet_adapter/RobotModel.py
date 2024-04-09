@@ -84,6 +84,9 @@ class RobotModel:
         return x, y
     
     def post_dest_to_robot(self):
+        if self.path_remaining[0].run_nest_action:
+            self.start_nest_action(self.path_remaining[0].action_id, self.task_id)
+            return
         target_x = self.path_remaining[0].x
         target_y = self.path_remaining[0].y
         target_yaw = self.path_remaining[0].yaw

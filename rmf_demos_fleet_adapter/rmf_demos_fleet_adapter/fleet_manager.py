@@ -194,11 +194,6 @@ class FleetManager(Node):
             qos_profile=qos_profile_system_default,
         )
 
-        self.nest_action_pub = self.create_publisher(
-            String,
-            'nest_action_requests',
-            qos_profile=qos_profile_system_default,
-        )
 
         @app.get('/open-rmf/rmf_demos_fm/status/', response_model=Response)
         async def status(robot_name: Optional[str] = None):
@@ -329,28 +324,6 @@ class FleetManager(Node):
             response['data'] = self.action_paths[activity][label]
             response['success'] = True
             return response
-        
-        @app.post(
-            '/open-rmf/rmf_demos_fm/start_nest_action/', response_model=Response
-        )
-        async def start_nest_action(
-            robot_name: str, cmd_id: int, request: Request
-        ):
-            self.get_logger().info('start nest action: {}'.format(robot_name))
-            response = {'success': False, 'msg': ''}
-            if robot_name not in self.robots:
-                return response
-            robot = self.robots[robot_name]
-            action_id = request.action_id
-            self.get_logger().info('action_id: {}'.format(action_id))
-            data = {
-                "robot_name": robot_name,
-                "cmd_id": cmd_id,
-                "action_id": action_id,
-            }
-            self.nest_action_pub.publish(String(data=json.dumps(data)))
-            response['success'] = True
-            return response
 
         @app.post(
             '/open-rmf/rmf_demos_fm/start_activity/', response_model=Response
@@ -376,15 +349,22 @@ class FleetManager(Node):
 
             if request.activity in ['nest_action']:
                 action_id = request.label
-            activity_path = self.action_paths[request.activity][request.label]
-            map_name = activity_path['map_name']
-            for wp in activity_path['path']:
                 target_loc = Location()
-                target_loc.x = wp[0]
-                target_loc.y = wp[1]
-                target_loc.yaw = wp[2]
-                target_loc.level_name = map_name
+                target_loc.x = cur_loc.x + 10.0
+                target_loc.y = cur_loc.y + 10.0
+                target_loc.run_nest_action = True
+                target_loc.action_id = action_id
                 path_request.path.append(target_loc)
+            else:
+                activity_path = self.action_paths[request.activity][request.label]
+                map_name = activity_path['map_name']
+                for wp in activity_path['path']:
+                    target_loc = Location()
+                    target_loc.x = wp[0]
+                    target_loc.y = wp[1]
+                    target_loc.yaw = wp[2]
+                    target_loc.level_name = map_name
+                    path_request.path.append(target_loc)
 
             path_request.fleet_name = self.fleet_name
             path_request.robot_name = robot_name

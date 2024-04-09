@@ -266,7 +266,7 @@ class RobotAdapter:
                 )
             case 'nest_action':
                 self.attempt_cmd_until_success(
-                    cmd=self.api.start_nest_action, args=(self.name, self.cmd_id, description['action_id'],)
+                    cmd=self.api.perform_nest_action, args=(self.name, self.cmd_id, description['action_id'],)
                 )
 
     def finish_action(self):
@@ -302,7 +302,23 @@ class RobotAdapter:
                     destination.speed_limit,
                 )
             
-
+    def perform_nest_action(self, action_id):
+        match self.api.start_activity(self.name, self.cmd_id, 'nest_action', action_id):
+            case RobotAPIResult.SUCCESS:
+                self.node.get_logger().info(
+                    f'Commanding [{self.name}] to perform nest action [{action_id}]'
+                )
+                return True
+            case RobotAPIResult.RETRY:
+                return False
+            case RobotAPIResult.IMPOSSIBLE:
+                self.node.get_logger().error(
+                    f'Fleet manager for [{self.name}] does not know how to '
+                    f'perform nest action [{action_id}]. We will terminate the activity.'
+                )
+                self.execution.finished()
+                self.execution = None
+                return True
     def perform_clean(self, zone):
         match self.api.start_activity(self.name, self.cmd_id, 'clean', zone):
             case (RobotAPIResult.SUCCESS, path):
