@@ -309,7 +309,7 @@ class RobotAdapter:
             
     def perform_nest_action(self, action_id):
         match self.api.start_activity(self.name, self.cmd_id, 'nest_action', action_id):
-            case RobotAPIResult.SUCCESS:
+            case (RobotAPIResult.SUCCESS, path):
                 self.node.get_logger().info(
                     f'Commanding [{self.name}] to perform nest action [{action_id}]'
                 )
@@ -325,6 +325,7 @@ class RobotAdapter:
                 self.execution.finished()
                 self.execution = None
                 return True
+                
     def perform_clean(self, zone):
         match self.api.start_activity(self.name, self.cmd_id, 'clean', zone):
             case (RobotAPIResult.SUCCESS, path):
