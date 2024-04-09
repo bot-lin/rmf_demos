@@ -383,7 +383,10 @@ class FleetManager(Node):
 
             response['success'] = True
             response['data'] = {}
-            response['data']['path'] = activity_path
+            try:
+                response['data']['path'] = activity_path
+            except:
+                response['data']['path'] = []
             return response
 
         @app.post(
