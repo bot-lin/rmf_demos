@@ -271,7 +271,7 @@ class RobotAdapter:
                 )
             case 'nest_action':
                 self.attempt_cmd_until_success(
-                    cmd=self.api.perform_nest_action, args=(self.name, self.cmd_id, description['action_id'],)
+                    cmd=self.perform_nest_action, args=(self.name, self.cmd_id, description['action_id'],)
                 )
 
     def finish_action(self):
