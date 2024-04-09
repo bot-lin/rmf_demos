@@ -354,7 +354,7 @@ class FleetManager(Node):
                 target_loc.x = cur_loc.x + 10.0
                 target_loc.y = cur_loc.y + 10.0
                 target_loc.level_name = "run_nest_action"
-                target_loc.index = action_id
+                target_loc.index = int(action_id)
                 path_request.path.append(target_loc)
             else:
                 activity_path = self.action_paths[request.activity][request.label]
