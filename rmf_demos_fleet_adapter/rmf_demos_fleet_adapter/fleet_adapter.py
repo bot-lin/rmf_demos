@@ -315,6 +315,7 @@ class RobotAdapter:
                 )
                 return True
             case RobotAPIResult.RETRY:
+                self.node.get_logger().warn("need to retry nest action")
                 return False
             case RobotAPIResult.IMPOSSIBLE:
                 self.node.get_logger().error(
