@@ -61,7 +61,7 @@ class RobotModel:
         except:
             self.connected = False
 
-    def confirm_robot_state(self, data_dict, robot_name):
+    def confirm_robot_state(self, data_dict):
         if data_dict['fsm'] in ['succeeded', 'canceled', 'failed']:
             http_response = requests.get('http://{}:1234/confirm_status'.format(self.ip))
             self.node.get_logger().info(http_response.text)
@@ -163,7 +163,10 @@ class RobotModel:
      
             data_ros.location.t = self.node.get_clock().now().to_msg()
             if self.close_enough_to_goal(x, y) or data_dict['fsm'] in ['succeeded', 'canceled', 'failed']:
-                self.path_remaining.pop(0)
+                if len(self.path_remaining) > 0:
+                    self.path_remaining.pop(0)
+                self.confirm_robot_state(data_dict)
+                
                 # self.task_id = ''
             data_ros.path = self.path_remaining
             data_ros.task_id = self.task_id
