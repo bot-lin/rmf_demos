@@ -346,6 +346,8 @@ class FleetManager(Node):
             cur_loc = robot.state.location
             target_loc = Location()
             path_request.path.append(cur_loc)
+            self.get_logger().info('--------------------------------------------')
+            self.get_logger().info(f'action paths: {request.activity} {request.label}')
 
             if request.activity in ['nest_action']:
                 action_id = request.label
