@@ -374,6 +374,8 @@ class FleetManager(Node):
             target_loc = Location()
             path_request.path.append(cur_loc)
 
+            if request.activity in ['nest_action']:
+                action_id = request.label
             activity_path = self.action_paths[request.activity][request.label]
             map_name = activity_path['map_name']
             for wp in activity_path['path']:
