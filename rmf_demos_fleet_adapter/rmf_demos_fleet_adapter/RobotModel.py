@@ -84,8 +84,8 @@ class RobotModel:
         return x, y
     
     def post_dest_to_robot(self):
-        if self.path_remaining[0].run_nest_action:
-            self.start_nest_action(self.path_remaining[0].action_id, self.task_id)
+        if self.path_remaining[0].level_name == 'run_nest_action':
+            self.start_nest_action(self.path_remaining[0].index, self.task_id)
             return
         target_x = self.path_remaining[0].x
         target_y = self.path_remaining[0].y
@@ -162,7 +162,7 @@ class RobotModel:
             data_ros.mode.mode = self.check_robot_mode(data_dict)
      
             data_ros.location.t = self.node.get_clock().now().to_msg()
-            if self.close_enough_to_goal(x, y):
+            if self.close_enough_to_goal(x, y) or data_dict['fsm'] in ['succeeded', 'canceled', 'failed']:
                 self.path_remaining.pop(0)
                 # self.task_id = ''
             data_ros.path = self.path_remaining
