@@ -335,8 +335,7 @@ class FleetManager(Node):
             response = {'success': False, 'msg': ''}
             if (
                 robot_name not in self.robots
-                or request.activity not in self.action_paths
-                or request.label not in self.action_paths[request.activity]
+                
             ):
                 return response
 
