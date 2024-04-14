@@ -154,7 +154,7 @@ class RobotModel:
             
             data_ros.seq = seq 
             x, y = self.find_map_in_rmf(float(data_dict['pose']['position']['x']), float(data_dict['pose']['position']['y']), origin_x=self.original_x, origin_y=self.original_y, height=self.height)
-            data_ros.battery_percent = 0.5 #float(data_dict['battery'])
+            data_ros.battery_percent = 50.0 #float(data_dict['battery'])
             data_ros.location.x = x
             data_ros.location.y = y
             data_ros.location.yaw = float(data_dict['pose']['pyr']['yaw'])
