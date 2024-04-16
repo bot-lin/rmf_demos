@@ -116,7 +116,8 @@ class RobotModel:
             "inflation_radius": 1.1
         }
         http_response = requests.post('http://{}:1234/go_to_simple'.format(self.ip), json=post_data)
-        self.node.get_logger().info("Go to simple response: {}".format(http_response.text))
+        print_string = "Robot: {} ".format(self.robot_name) + "Go to simple response: {} ".format(http_response.text) + "map_x: {}, map_y: {} ".format(map_x, map_y) + "target_x: {}, target_y: {}".format(target_x, target_y)
+        self.node.get_logger().info(print_string)
         if json.loads(http_response.text)["code"] == 0:
             pass
 
