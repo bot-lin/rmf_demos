@@ -168,7 +168,8 @@ class RobotModel:
             data_ros.location.t = self.node.get_clock().now().to_msg()
             if self.close_enough_to_goal(x, y) or data_dict['fsm'] in ['succeeded', 'canceled', 'failed']:
                 if len(self.path_remaining) > 0:
-                    self.path_remaining.pop(0)
+                    tmp = self.path_remaining.pop(0)
+                    self.node.get_logger().info("Robot: {} \n".format(self.robot_name) + "Path remaining: {} \n".format(self.path_remaining) + "Popped: {}\n".format(tmp))
                 self.confirm_robot_state(data_dict)
                 
                 # self.task_id = ''
