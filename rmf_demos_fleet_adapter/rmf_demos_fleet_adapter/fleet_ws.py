@@ -46,7 +46,6 @@ class WebSocketNode(Node):
 
     
     def task_callback(self, msg):
-        self.get_logger().info(f"Received task request: {msg}")
         # self.get_logger().info(f'navigation: path_request.task_id: {path_request.task_id}')
         self.robots[msg.robot_name].set_path_remaining(msg.path, task_id=msg.task_id)
 
