@@ -33,6 +33,7 @@ class RobotModel:
         if self.path_request_valid(path, task_id):
             self.node.get_logger().info("Path is Valid")
             self.task_id = task_id
+            self.path_remaining = []
             self.path_remaining.append(path[-1])
             self.post_dest_to_robot()
     
