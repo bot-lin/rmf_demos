@@ -1,7 +1,7 @@
 coordinate_system: reference_image
 crowd_sim:
   agent_groups:
-    - {agents_name: [cleanerBotA_2, cleanerBotA_1, tinyBot_1, deliveryBot_1], agents_number: 4, group_id: 0, profile_selector: external_agent, state_selector: external_static, x: 0, y: 0}
+    - {agents_name: [tinyBot_1, tinyBot_2, tinyBot_3, tinyBot_4], agents_number: 4, group_id: 0, profile_selector: external_agent, state_selector: external_static, x: 0, y: 0}
   agent_profiles:
     - {ORCA_tau: 1, ORCA_tauObst: 0.4, class: 1, max_accel: 0, max_angle_vel: 0, max_neighbors: 10, max_speed: 0, name: external_agent, neighbor_dist: 5, obstacle_set: 1, pref_speed: 0, r: 0.25}
   enable: 0
@@ -238,14 +238,14 @@ levels:
       - [216.974, 446.636, 0, ""]
       - [205.957, 391.294, 0, ""]
       - [153.759, 417.897, 0, clean_waiting_area, {is_cleaning_zone: [4, true]}]
-      - [525.131, 496.822, 0, cleanerbot_charger2, {is_charger: [4, true], is_holding_point: [4, true], is_parking_spot: [4, true], spawn_robot_name: [1, cleanerBotA_2], spawn_robot_type: [1, CleanerBotA]}]
-      - [473.507, 498.428, 0, cleanerbot_charger1, {is_charger: [4, true], is_holding_point: [4, true], is_parking_spot: [4, true], spawn_robot_name: [1, cleanerBotA_1], spawn_robot_type: [1, CleanerBotA]}]
+      - [525.131, 496.822, 0, cleanerbot_charger2, {is_charger: [4, true], is_holding_point: [4, true], is_parking_spot: [4, true], spawn_robot_name: [1, tinyBot_4], spawn_robot_type: [1, TinyRobot]}]
+      - [473.507, 498.428, 0, cleanerbot_charger1, {is_charger: [4, true], is_holding_point: [4, true], is_parking_spot: [4, true], spawn_robot_name: [1, tinyBot_3], spawn_robot_type: [1, TinyRobot]}]
       - [205.148, 321.043, 0, ""]
       - [254.959, 203.925, 0, ""]
       - [230.964, 204.483, 0, clean_restaurant, {is_cleaning_zone: [4, true]}]
       - [422.801, 492.463, 0, tinybot_charger, {is_charger: [4, true], is_holding_point: [4, true], is_parking_spot: [4, true], spawn_robot_name: [1, tinyBot_1], spawn_robot_type: [1, TinyRobot]}]
       - [255.891, 653.729, 0, ""]
-      - [261.443, 700.003, 0, deliverybot_charger, {is_charger: [4, true], is_holding_point: [4, true], is_parking_spot: [4, true], spawn_robot_name: [1, deliveryBot_1], spawn_robot_type: [1, DeliveryRobot]}]
+      - [261.443, 700.003, 0, deliverybot_charger, {is_charger: [4, true], is_holding_point: [4, true], is_parking_spot: [4, true], spawn_robot_name: [1, tinyBot_2], spawn_robot_type: [1, TinyRobot]}]
       - [356.481, 391.294, 0, "", {is_holding_point: [4, true]}]
       - [441.6, 637.3, 0, ""]
       - [297.116, 202.189, 0, ""]
