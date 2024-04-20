@@ -929,7 +929,7 @@ levels:
       - [259.73700000000002, 533.84699999999998, 0, ""]
       - [257.87200000000001, 595.67200000000003, 0, L3_master_suite3]
       - [430.553, 533.58100000000002, 0, ""]
-      - [430.01999999999998, 597.803, 0, L3_master_suite1]
+      - [430.01999999999998, 597.803, 0, L3_master_suite4]
     walls:
       - [4, 5, {alpha: [3, 1], texture_height: [3, 2.5], texture_name: [1, white_brick], texture_scale: [3, 1], texture_width: [3, 1]}]
       - [5, 6, {alpha: [3, 1], texture_height: [3, 2.5], texture_name: [1, white_brick], texture_scale: [3, 1], texture_width: [3, 1]}]
