@@ -33,7 +33,13 @@ rmf_fleet:
   finishing_request: "park" # [park, charge, nothing]
   robots:
     tinyBot_1:
-      charger: "tinybot_charger"
+      charger: "tinybot_charger1"
+    tinyBot_2:
+      charger: "tinybot_charger2"
+    tinyBot_3:
+      charger: "tinybot_charger3"
+    tinyBot_4:
+      charger: "tinybot_charger4"
 
 fleet_manager:
   ip: "127.0.0.1"
