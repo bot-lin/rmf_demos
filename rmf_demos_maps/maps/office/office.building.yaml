@@ -1,3 +1,4 @@
+zc@zc-XPS-13-9305:~/ws$ cat src/demonstrations/rmf_demos/rmf_demos_maps/maps/office/office.building.yaml 
 coordinate_system: reference_image
 crowd_sim:
   agent_groups:
@@ -210,13 +211,13 @@ levels:
       - [2438.386, 471.24299999999999, 0, tinyRobot4_charger, {is_charger: [4, true], is_holding_point: [4, true], is_parking_spot: [4, true], spawn_robot_name: [1, tinyRobot4], spawn_robot_type: [1, TinyRobot]}]
       - [1551.069, 468.34899999999999, 0, ""]
       - [1052.7270000000001, 730.18200000000002, 0, ""]
-      - [2474.5450000000001, 885.63599999999997, 0, hardware_2, {dropoff_ingestor: [1, coke_ingestor], is_holding_point: [4, true], is_parking_spot: [4, false]}]
+      - [2474.5450000000001, 885.63599999999997, 0, t1, {dropoff_ingestor: [1, coke_ingestor], is_holding_point: [4, true], is_parking_spot: [4, false]}]
       - [934.92999999999995, 935.42899999999997, 0, "", {is_parking_spot: [4, false]}]
-      - [631.56200000000001, 587.89400000000001, 0, coe, {dropoff_ingestor: [1, coke_ingestor_2], is_holding_point: [4, true], is_parking_spot: [4, false]}]
+      - [631.56200000000001, 587.89400000000001, 0, t2, {dropoff_ingestor: [1, coke_ingestor_2], is_holding_point: [4, true], is_parking_spot: [4, false]}]
       - [1790.4670000000001, 1326.2180000000001, 0, ""]
       - [1364.76, 1336.7170000000001, 0, ""]
       - [2222.415, 1308.722, 0, patrol_C]
-      - [943.63099999999997, 1273.4349999999999, 0, patrol_B]
+      - [943.63099999999997, 1273.4349999999999, 0, t3]
       - [1107.614, 1316.271, 0, ""]
       - [770.875, 383.43400000000003, 0, supplies, {is_parking_spot: [4, true]}]
       - [2238.471, 477.12299999999999, 0, patrol_A2]
