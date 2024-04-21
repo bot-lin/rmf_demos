@@ -96,6 +96,7 @@ levels:
       - [42, 76, {bidirectional: [4, true], demo_mock_floor_name: [1, ""], demo_mock_lift_name: [1, ""], graph_idx: [2, 0], mutex: [1, ""], orientation: [1, ""], speed_limit: [3, 0]}]
       - [76, 49, {bidirectional: [4, true], demo_mock_floor_name: [1, ""], demo_mock_lift_name: [1, ""], graph_idx: [2, 0], mutex: [1, ""], orientation: [1, ""], speed_limit: [3, 0]}]
       - [76, 40, {bidirectional: [4, true], demo_mock_floor_name: [1, ""], demo_mock_lift_name: [1, ""], graph_idx: [2, 0], mutex: [1, ""], orientation: [1, ""], speed_limit: [3, 0]}]
+      - [64, 58, {bidirectional: [4, true], demo_mock_floor_name: [1, ""], demo_mock_lift_name: [1, ""], graph_idx: [2, 0], mutex: [1, ""], orientation: [1, ""], speed_limit: [3, 0]}]
     layers:
       office_laserscan:
         color: [0.20799999999999999, 0.51800000000000002, 0.89400000000000002, 0.5]
@@ -122,14 +123,12 @@ levels:
       - {dispensable: false, model_name: OpenRobotics/Fridge, name: Fridge, static: true, x: 1878.9069999999999, y: 679.64499999999998, yaw: 1.5708, z: 0}
       - {dispensable: false, model_name: OpenRobotics/OfficeChairGrey, name: OfficeChairGrey, static: true, x: 1683.9839999999999, y: 655.24099999999999, yaw: 0.0166, z: 0}
       - {dispensable: false, model_name: OpenRobotics/AdjTable, name: AdjTable, static: true, x: 1392.53, y: 706.36699999999996, yaw: 3.1613000000000002, z: 0}
-      - {dispensable: false, model_name: OpenRobotics/AdjTable, name: AdjTable, static: true, x: 991.71699999999998, y: 514.34500000000003, yaw: 1.099, z: 0}
       - {dispensable: false, model_name: OpenRobotics/AdjTable, name: AdjTable, static: true, x: 1682.6990000000001, y: 701.84699999999998, yaw: 3.1594000000000002, z: 0}
       - {dispensable: false, model_name: OpenRobotics/AdjTable, name: AdjTable, static: true, x: 795.48699999999997, y: 1142.915, yaw: 1.0878000000000001, z: 0}
       - {dispensable: false, model_name: OpenRobotics/Drawer, name: Drawer, static: true, x: 728.37800000000004, y: 1246.6489999999999, yaw: 1.1104000000000001, z: 0}
       - {dispensable: false, model_name: OpenRobotics/AdjTable, name: AdjTable, static: true, x: 2607.625, y: 1219.095, yaw: 4.6087999999999996, z: 0}
       - {dispensable: false, model_name: OpenRobotics/AdjTable, name: AdjTable, static: true, x: 2644, y: 896, yaw: 4.5815999999999999, z: 0}
       - {dispensable: false, model_name: OpenRobotics/AdjTable, name: AdjTable, static: true, x: 2354.6289999999999, y: 849.779, yaw: 1.5732999999999999, z: 0}
-      - {dispensable: false, model_name: OpenRobotics/AdjTable, name: AdjTable, static: true, x: 883, y: 457, yaw: 4.2286000000000001, z: 0}
       - {dispensable: false, model_name: OpenRobotics/AdjTable, name: AdjTable, static: true, x: 1536.4100000000001, y: 657.46100000000001, yaw: 1.5913999999999999, z: 0}
       - {dispensable: false, model_name: OpenRobotics/OfficeChairGrey, name: OfficeChairGrey, static: true, x: 2676.4400000000001, y: 406.87200000000001, yaw: 1.8623000000000001, z: 0}
       - {dispensable: false, model_name: OpenRobotics/OfficeChairGrey, name: OfficeChairGrey, static: true, x: 2648.7919999999999, y: 545.11199999999997, yaw: 1.4218999999999999, z: 0}
@@ -152,7 +151,6 @@ levels:
       - {dispensable: false, model_name: OpenRobotics/WhiteCabinet, name: OpenRobotics/WhiteCabinet, static: true, x: 2094.0799999999999, y: 607.09699999999998, yaw: -1.5640000000000001, z: 0}
       - {dispensable: false, model_name: OpenRobotics/Drawer, name: OpenRobotics/Drawer, static: true, x: 2096.3449999999998, y: 686.04700000000003, yaw: -1.5750999999999999, z: 0}
       - {dispensable: false, model_name: OpenRobotics/MetalCabinetYellow, name: OpenRobotics/MetalCabinetYellow, static: true, x: 2562.2370000000001, y: 408.46100000000001, yaw: -0.043499999999999997, z: 0}
-      - {dispensable: false, model_name: OpenRobotics/MetalCabinet, name: OpenRobotics/MetalCabinet, static: true, x: 758.96900000000005, y: 470.916, yaw: 2.6833999999999998, z: 0}
       - {dispensable: false, model_name: OpenRobotics/MetalCabinet, name: OpenRobotics/MetalCabinet, static: true, x: 696.33399999999995, y: 371.52800000000002, yaw: 1.1071, z: 0}
       - {dispensable: false, model_name: OpenRobotics/MetalCabinet, name: OpenRobotics/MetalCabinet, static: true, x: 2463.2600000000002, y: 758.13, yaw: -0.014500000000000001, z: 0}
       - {dispensable: false, model_name: OpenRobotics/MetalCabinet, name: OpenRobotics/MetalCabinet, static: true, x: 2561.8960000000002, y: 759.04300000000001, yaw: -0.024400000000000002, z: 0}
@@ -260,9 +258,6 @@ levels:
       - [29, 28, {alpha: [3, 1], texture_height: [3, 2.5], texture_name: [1, wall_white], texture_scale: [3, 1], texture_width: [3, 1]}]
       - [28, 27, {alpha: [3, 1], texture_height: [3, 2.5], texture_name: [1, wall_white], texture_scale: [3, 1], texture_width: [3, 1]}]
       - [35, 34, {alpha: [3, 1], texture_height: [3, 2.5], texture_name: [1, wall_white], texture_scale: [3, 1], texture_width: [3, 1]}]
-      - [34, 33, {alpha: [3, 1], texture_height: [3, 2.5], texture_name: [1, wall_white], texture_scale: [3, 1], texture_width: [3, 1]}]
-      - [33, 32, {alpha: [3, 1], texture_height: [3, 2.5], texture_name: [1, wall_white], texture_scale: [3, 1], texture_width: [3, 1]}]
-      - [36, 33, {alpha: [3, 1], texture_height: [3, 2.5], texture_name: [1, wall_white], texture_scale: [3, 1], texture_width: [3, 1]}]
       - [27, 36, {alpha: [3, 1], texture_height: [3, 2.5], texture_name: [1, wall_white], texture_scale: [3, 1], texture_width: [3, 1]}]
       - [26, 36, {alpha: [3, 1], texture_height: [3, 2.5], texture_name: [1, wall_white], texture_scale: [3, 1], texture_width: [3, 1]}]
       - [25, 38, {alpha: [3, 1], texture_height: [3, 2.5], texture_name: [1, wall_white], texture_scale: [3, 1], texture_width: [3, 1]}]
