@@ -74,9 +74,7 @@ levels:
       - [54, 62, {bidirectional: [4, true], demo_mock_floor_name: [1, ""], demo_mock_lift_name: [1, ""], graph_idx: [2, 0], mutex: [1, ""], orientation: [1, ""], speed_limit: [3, 0]}]
       - [53, 63, {bidirectional: [4, true], demo_mock_floor_name: [1, ""], demo_mock_lift_name: [1, ""], graph_idx: [2, 0], mutex: [1, ""], orientation: [1, ""], speed_limit: [3, 0]}]
       - [64, 52, {bidirectional: [4, true], demo_mock_floor_name: [1, ""], demo_mock_lift_name: [1, ""], graph_idx: [2, 0], mutex: [1, ""], orientation: [1, ""], speed_limit: [3, 0]}]
-      - [45, 46, {bidirectional: [4, true], demo_mock_floor_name: [1, ""], demo_mock_lift_name: [1, ""], graph_idx: [2, 0], mutex: [1, ""], orientation: [1, ""], speed_limit: [3, 0]}]
       - [55, 65, {bidirectional: [4, true], demo_mock_floor_name: [1, ""], demo_mock_lift_name: [1, ""], graph_idx: [2, 0], mutex: [1, ""], orientation: [1, ""], speed_limit: [3, 0]}]
-      - [66, 50, {bidirectional: [4, true], demo_mock_floor_name: [1, ""], demo_mock_lift_name: [1, ""], graph_idx: [2, 0], mutex: [1, ""], orientation: [1, ""], speed_limit: [3, 0]}]
       - [57, 54, {bidirectional: [4, true], demo_mock_floor_name: [1, ""], demo_mock_lift_name: [1, ""], graph_idx: [2, 0], mutex: [1, ""], orientation: [1, ""], speed_limit: [3, 0]}]
       - [54, 53, {bidirectional: [4, true], demo_mock_floor_name: [1, ""], demo_mock_lift_name: [1, ""], graph_idx: [2, 0], mutex: [1, ""], orientation: [1, ""], speed_limit: [3, 0]}]
       - [53, 65, {bidirectional: [4, true], demo_mock_floor_name: [1, ""], demo_mock_lift_name: [1, ""], graph_idx: [2, 0], mutex: [1, ""], orientation: [1, ""], speed_limit: [3, 0]}]
@@ -97,6 +95,11 @@ levels:
       - [76, 49, {bidirectional: [4, true], demo_mock_floor_name: [1, ""], demo_mock_lift_name: [1, ""], graph_idx: [2, 0], mutex: [1, ""], orientation: [1, ""], speed_limit: [3, 0]}]
       - [76, 40, {bidirectional: [4, true], demo_mock_floor_name: [1, ""], demo_mock_lift_name: [1, ""], graph_idx: [2, 0], mutex: [1, ""], orientation: [1, ""], speed_limit: [3, 0]}]
       - [64, 58, {bidirectional: [4, true], demo_mock_floor_name: [1, ""], demo_mock_lift_name: [1, ""], graph_idx: [2, 0], mutex: [1, ""], orientation: [1, ""], speed_limit: [3, 0]}]
+      - [66, 77, {bidirectional: [4, true], demo_mock_floor_name: [1, ""], demo_mock_lift_name: [1, ""], graph_idx: [2, 0], mutex: [1, ""], orientation: [1, ""], speed_limit: [3, 0]}]
+      - [77, 50, {bidirectional: [4, true], demo_mock_floor_name: [1, ""], demo_mock_lift_name: [1, ""], graph_idx: [2, 0], mutex: [1, ""], orientation: [1, ""], speed_limit: [3, 0]}]
+      - [77, 78, {bidirectional: [4, true], demo_mock_floor_name: [1, ""], demo_mock_lift_name: [1, ""], graph_idx: [2, 0], mutex: [1, ""], orientation: [1, ""], speed_limit: [3, 0]}]
+      - [78, 46, {bidirectional: [4, true], demo_mock_floor_name: [1, ""], demo_mock_lift_name: [1, ""], graph_idx: [2, 0], mutex: [1, ""], orientation: [1, ""], speed_limit: [3, 0]}]
+      - [45, 78, {bidirectional: [4, true], demo_mock_floor_name: [1, ""], demo_mock_lift_name: [1, ""], graph_idx: [2, 0], mutex: [1, ""], orientation: [1, ""], speed_limit: [3, 0]}]
     layers:
       office_laserscan:
         color: [0.20799999999999999, 0.51800000000000002, 0.89400000000000002, 0.5]
@@ -154,8 +157,6 @@ levels:
       - {dispensable: false, model_name: OpenRobotics/MetalCabinet, name: OpenRobotics/MetalCabinet, static: true, x: 696.33399999999995, y: 371.52800000000002, yaw: 1.1071, z: 0}
       - {dispensable: false, model_name: OpenRobotics/MetalCabinet, name: OpenRobotics/MetalCabinet, static: true, x: 2463.2600000000002, y: 758.13, yaw: -0.014500000000000001, z: 0}
       - {dispensable: false, model_name: OpenRobotics/MetalCabinet, name: OpenRobotics/MetalCabinet, static: true, x: 2561.8960000000002, y: 759.04300000000001, yaw: -0.024400000000000002, z: 0}
-      - {dispensable: false, model_name: OpenRobotics/Drawer, name: OpenRobotics/Drawer, static: true, x: 2339.9650000000001, y: 1065.9090000000001, yaw: 1.5708, z: 0}
-      - {dispensable: false, model_name: OpenRobotics/Drawer, name: OpenRobotics/Drawer, static: true, x: 2339.9650000000001, y: 1116.1400000000001, yaw: 1.5708, z: 0}
     vertices:
       - [80.269999999999996, 1024.9739999999999, 0, ""]
       - [580.79499999999996, 43.396000000000001, 0, ""]
@@ -234,6 +235,8 @@ levels:
       - [1140.425, 1039.011, 0, ""]
       - [663.83600000000001, 790.26499999999999, 0, ""]
       - [1127.883, 591.68700000000001, 0, ""]
+      - [2471.9450000000002, 1055.7329999999999, 0, ""]
+      - [2206.4769999999999, 1047.3720000000001, 0, ""]
     walls:
       - [6, 7, {alpha: [3, 1], texture_height: [3, 2.5], texture_name: [1, wall_white], texture_scale: [3, 1], texture_width: [3, 1]}]
       - [7, 12, {alpha: [3, 1], texture_height: [3, 2.5], texture_name: [1, wall_white], texture_scale: [3, 1], texture_width: [3, 1]}]
@@ -244,7 +247,6 @@ levels:
       - [14, 13, {alpha: [3, 1], texture_height: [3, 2.5], texture_name: [1, wall_white], texture_scale: [3, 1], texture_width: [3, 1]}]
       - [14, 15, {alpha: [3, 1], texture_height: [3, 2.5], texture_name: [1, wall_white], texture_scale: [3, 1], texture_width: [3, 1]}]
       - [15, 16, {alpha: [3, 1], texture_height: [3, 2.5], texture_name: [1, wall_white], texture_scale: [3, 1], texture_width: [3, 1]}]
-      - [16, 17, {alpha: [3, 0.5], texture_height: [3, 2.5], texture_name: [1, wall_white], texture_scale: [3, 1], texture_width: [3, 1]}]
       - [20, 21, {alpha: [3, 1], texture_height: [3, 2.5], texture_name: [1, wall_white], texture_scale: [3, 1], texture_width: [3, 1]}]
       - [15, 21, {alpha: [3, 1], texture_height: [3, 2.5], texture_name: [1, wall_white], texture_scale: [3, 1], texture_width: [3, 1]}]
       - [18, 19, {alpha: [3, 0.5], texture_height: [3, 2.5], texture_name: [1, wall_white], texture_scale: [3, 1], texture_width: [3, 1]}]
