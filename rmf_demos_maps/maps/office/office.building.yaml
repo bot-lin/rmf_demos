@@ -1,4 +1,3 @@
-zc@zc-XPS-13-9305:~/ws$ cat src/demonstrations/rmf_demos/rmf_demos_maps/maps/office/office.building.yaml 
 coordinate_system: reference_image
 crowd_sim:
   agent_groups:
