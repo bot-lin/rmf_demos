@@ -92,11 +92,8 @@ levels:
       - [74, 49, {bidirectional: [4, true], demo_mock_floor_name: [1, ""], demo_mock_lift_name: [1, ""], graph_idx: [2, 0], mutex: [1, ""], orientation: [1, ""], speed_limit: [3, 0]}]
       - [74, 40, {bidirectional: [4, true], demo_mock_floor_name: [1, ""], demo_mock_lift_name: [1, ""], graph_idx: [2, 0], mutex: [1, ""], orientation: [1, ""], speed_limit: [3, 0]}]
       - [63, 57, {bidirectional: [4, true], demo_mock_floor_name: [1, ""], demo_mock_lift_name: [1, ""], graph_idx: [2, 0], mutex: [1, ""], orientation: [1, ""], speed_limit: [3, 0]}]
-      - [65, 75, {bidirectional: [4, true], demo_mock_floor_name: [1, ""], demo_mock_lift_name: [1, ""], graph_idx: [2, 0], mutex: [1, ""], orientation: [1, ""], speed_limit: [3, 0]}]
-      - [75, 50, {bidirectional: [4, true], demo_mock_floor_name: [1, ""], demo_mock_lift_name: [1, ""], graph_idx: [2, 0], mutex: [1, ""], orientation: [1, ""], speed_limit: [3, 0]}]
-      - [75, 76, {bidirectional: [4, false], demo_mock_floor_name: [1, ""], demo_mock_lift_name: [1, ""], graph_idx: [2, 0], mutex: [1, ""], orientation: [1, ""], speed_limit: [3, 0]}]
+      - [75, 76, {bidirectional: [4, true], demo_mock_floor_name: [1, ""], demo_mock_lift_name: [1, ""], graph_idx: [2, 0], mutex: [1, ""], orientation: [1, ""], speed_limit: [3, 0]}]
       - [76, 46, {bidirectional: [4, true], demo_mock_floor_name: [1, ""], demo_mock_lift_name: [1, ""], graph_idx: [2, 0], mutex: [1, ""], orientation: [1, ""], speed_limit: [3, 0]}]
-      - [45, 76, {bidirectional: [4, true], demo_mock_floor_name: [1, ""], demo_mock_lift_name: [1, ""], graph_idx: [2, 0], mutex: [1, ""], orientation: [1, ""], speed_limit: [3, 0]}]
       - [49, 77, {bidirectional: [4, true], demo_mock_floor_name: [1, ""], demo_mock_lift_name: [1, ""], graph_idx: [2, 0], mutex: [1, ""], orientation: [1, ""], speed_limit: [3, 0]}]
       - [63, 77, {bidirectional: [4, true], demo_mock_floor_name: [1, ""], demo_mock_lift_name: [1, ""], graph_idx: [2, 0], mutex: [1, ""], orientation: [1, ""], speed_limit: [3, 0]}]
       - [77, 78, {bidirectional: [4, true], demo_mock_floor_name: [1, ""], demo_mock_lift_name: [1, ""], graph_idx: [2, 0], mutex: [1, ""], orientation: [1, ""], speed_limit: [3, 0]}]
@@ -108,6 +105,9 @@ levels:
       - [79, 83, {bidirectional: [4, true], demo_mock_floor_name: [1, ""], demo_mock_lift_name: [1, ""], graph_idx: [2, 0], mutex: [1, ""], orientation: [1, ""], speed_limit: [3, 0]}]
       - [80, 84, {bidirectional: [4, true], demo_mock_floor_name: [1, ""], demo_mock_lift_name: [1, ""], graph_idx: [2, 0], mutex: [1, ""], orientation: [1, ""], speed_limit: [3, 0]}]
       - [81, 85, {bidirectional: [4, true], demo_mock_floor_name: [1, ""], demo_mock_lift_name: [1, ""], graph_idx: [2, 0], mutex: [1, ""], orientation: [1, ""], speed_limit: [3, 0]}]
+      - [45, 86, {bidirectional: [4, true], demo_mock_floor_name: [1, ""], demo_mock_lift_name: [1, ""], graph_idx: [2, 0], mutex: [1, ""], orientation: [1, ""], speed_limit: [3, 0]}]
+      - [86, 50, {bidirectional: [4, true], demo_mock_floor_name: [1, ""], demo_mock_lift_name: [1, ""], graph_idx: [2, 0], mutex: [1, ""], orientation: [1, ""], speed_limit: [3, 0]}]
+      - [86, 76, {bidirectional: [4, true], demo_mock_floor_name: [1, ""], demo_mock_lift_name: [1, ""], graph_idx: [2, 0], mutex: [1, ""], orientation: [1, ""], speed_limit: [3, 0]}]
     layers:
       office_laserscan:
         color: [0.20799999999999999, 0.51800000000000002, 0.89400000000000002, 0.5]
@@ -137,7 +137,6 @@ levels:
       - {dispensable: false, model_name: OpenRobotics/AdjTable, name: AdjTable, static: true, x: 1682.6990000000001, y: 701.84699999999998, yaw: 3.1594000000000002, z: 0}
       - {dispensable: false, model_name: OpenRobotics/AdjTable, name: AdjTable, static: true, x: 2607.625, y: 1219.095, yaw: 4.6087999999999996, z: 0}
       - {dispensable: false, model_name: OpenRobotics/AdjTable, name: AdjTable, static: true, x: 2644, y: 896, yaw: 4.5815999999999999, z: 0}
-      - {dispensable: false, model_name: OpenRobotics/AdjTable, name: AdjTable, static: true, x: 2354.6289999999999, y: 849.779, yaw: 1.5732999999999999, z: 0}
       - {dispensable: false, model_name: OpenRobotics/AdjTable, name: AdjTable, static: true, x: 1536.4100000000001, y: 657.46100000000001, yaw: 1.5913999999999999, z: 0}
       - {dispensable: false, model_name: OpenRobotics/OfficeChairGrey, name: OfficeChairGrey, static: true, x: 2676.4400000000001, y: 406.87200000000001, yaw: 1.8623000000000001, z: 0}
       - {dispensable: false, model_name: OpenRobotics/OfficeChairGrey, name: OfficeChairGrey, static: true, x: 2648.7919999999999, y: 545.11199999999997, yaw: 1.4218999999999999, z: 0}
@@ -213,9 +212,9 @@ levels:
       - [2438.386, 471.24299999999999, 0, tinyRobot4_charger, {is_charger: [4, true], is_holding_point: [4, true], is_parking_spot: [4, true], spawn_robot_name: [1, tinyRobot4], spawn_robot_type: [1, TinyRobot]}]
       - [1551.069, 468.34899999999999, 0, ""]
       - [1052.7270000000001, 730.18200000000002, 0, ""]
-      - [2474.5450000000001, 885.63599999999997, 0, t1, {dropoff_ingestor: [1, coke_ingestor], is_holding_point: [4, true], is_parking_spot: [4, false]}]
+      - [2474.5450000000001, 885.63599999999997, 0, d4, {dropoff_ingestor: [1, coke_ingestor], is_holding_point: [4, true], is_parking_spot: [4, false]}]
       - [934.92999999999995, 935.42899999999997, 0, "", {is_parking_spot: [4, false]}]
-      - [1790.4670000000001, 1326.2180000000001, 0, ""]
+      - [1790.4670000000001, 1326.2180000000001, 0, d7]
       - [1364.76, 1336.7170000000001, 0, ""]
       - [2222.415, 1308.722, 0, patrol_C]
       - [943.63099999999997, 1273.4349999999999, 0, t3]
@@ -227,8 +226,8 @@ levels:
       - [1365.1089999999999, 1120.3630000000001, 0, ""]
       - [1791.0930000000001, 1110.8050000000001, 0, tinyRobot5_charger, {is_charger: [4, true], is_holding_point: [4, true], is_parking_spot: [4, true], spawn_robot_name: [1, tinyRobot5], spawn_robot_type: [1, TinyRobot]}]
       - [769.86699999999996, 618.14800000000002, 0, t4]
-      - [2016.125, 1310.9549999999999, 0, ""]
-      - [2468.096, 1217.693, 0, ""]
+      - [2016.125, 1310.9549999999999, 0, d8]
+      - [2468.096, 1217.693, 0, d6]
       - [2412.5810000000001, 627.5, 0, tinyRobot2_charger, {is_charger: [4, true], is_holding_point: [4, true], is_parking_spot: [4, true], spawn_robot_name: [1, tinyRobot2], spawn_robot_type: [1, TinyRobot]}]
       - [1255.0239999999999, 824.40300000000002, 0, ""]
       - [2141.6390000000001, 799.18499999999995, 0, ""]
@@ -238,7 +237,7 @@ levels:
       - [2001.6279999999999, 1110.0809999999999, 0, ""]
       - [1140.425, 1039.011, 0, ""]
       - [1127.883, 591.68700000000001, 0, ""]
-      - [2471.9450000000002, 1055.7329999999999, 0, ""]
+      - [2471.9450000000002, 1055.7329999999999, 0, d5]
       - [2206.4769999999999, 1047.3720000000001, 0, ""]
       - [918.85299999999995, 675.29899999999998, 0, ""]
       - [843.60199999999998, 825.79999999999995, 0, ""]
@@ -249,6 +248,7 @@ levels:
       - [649.20399999999995, 878.05799999999999, 0, t6]
       - [565.59199999999998, 986.75300000000004, 0, t7]
       - [477.80000000000001, 1112.171, 0, t8]
+      - [2204.3870000000002, 911.50300000000004, 0, ""]
     walls:
       - [6, 7, {alpha: [3, 1], texture_height: [3, 2.5], texture_name: [1, wall_white], texture_scale: [3, 1], texture_width: [3, 1]}]
       - [7, 12, {alpha: [3, 1], texture_height: [3, 2.5], texture_name: [1, wall_white], texture_scale: [3, 1], texture_width: [3, 1]}]
@@ -279,4 +279,4 @@ levels:
       - [69, 70, {alpha: [3, 1], texture_height: [3, 2.5], texture_name: [1, blue_linoleum_high_contrast], texture_scale: [3, 1], texture_width: [3, 1]}]
       - [70, 71, {alpha: [3, 1], texture_height: [3, 2.5], texture_name: [1, blue_linoleum_high_contrast], texture_scale: [3, 1], texture_width: [3, 1]}]
 lifts: {}
-name: buildings
+name: building
