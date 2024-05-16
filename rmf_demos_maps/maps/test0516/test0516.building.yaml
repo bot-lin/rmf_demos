@@ -15,7 +15,7 @@ crowd_sim:
 graphs:
   {}
 levels:
-  l1:
+  L1:
     drawing:
       filename: fleet.png
     elevation: 0
