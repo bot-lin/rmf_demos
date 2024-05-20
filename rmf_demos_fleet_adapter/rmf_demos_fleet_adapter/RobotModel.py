@@ -23,8 +23,8 @@ class RobotModel:
     def path_request_valid(self, path, task_id):
         if len(path) == 0:
             return False
-        if task_id == self.task_id:
-            return False
+        # if task_id == self.task_id:
+        #     return False
         return True
     
     def set_path_remaining(self, path, task_id):
