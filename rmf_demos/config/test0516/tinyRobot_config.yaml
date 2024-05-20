@@ -36,15 +36,15 @@ rmf_fleet:
     tinyrobo22:
         charger: "d22"
         responsive_wait: False # Should responsive wait be on/off for this specific robot? Overrides the fleet-wide setting.
-        ip: "10.1.17.127"
+        ip: "10.1.17.114"
     tinyrobot15:
         charger: "d15"
         responsive_wait: False # Should responsive wait be on/off for this specific robot? Overrides the fleet-wide setting.
-        ip: "10.1.17.40"
+        ip: "10.1.17.122"
     tinyrobot18:
         charger: "d18"
         responsive_wait: False # Should responsive wait be on/off for this specific robot? Overrides the fleet-wide setting.
-        ip: "10.1.17.106"
+        ip: "10.1.17.126"
     # tinyrobot25:
     #     charger: "d25"
     #     responsive_wait: False # Should responsive wait be on/off for this specific robot? Overrides the fleet-wide setting.
