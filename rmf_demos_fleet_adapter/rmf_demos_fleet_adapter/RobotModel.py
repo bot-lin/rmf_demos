@@ -122,7 +122,7 @@ class RobotModel:
                 }
             },
             "use_pyr": True,
-            "precision_xy": 0.02,
+            "precision_xy": 0.05,
             "precision_yaw": 6.0,
             "is_reverse": True,
             "nav_type": "auto",
