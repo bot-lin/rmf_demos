@@ -123,7 +123,7 @@ class RobotModel:
             },
             "use_pyr": True,
             "precision_xy": 0.1,
-            "precision_yaw": 0.1,
+            "precision_yaw": 6.0,
             "is_reverse": True,
             "nav_type": "auto",
             "task_id": str(self.task_id),
