@@ -35,7 +35,10 @@ class RobotModel:
             self.task_id = task_id
             self.path_remaining = []
             self.path_remaining.append(path[-1])
-            self.post_dest_to_robot()
+            if path[0] == path[-1]:
+                self.stop_robot()
+            else:
+                self.post_dest_to_robot()
     
     def start_nest_action(self, action_id, cmd_id):
         http_response = requests.get('http://{}:5000/deploy/executeAction/{}/{}'.format(self.ip, action_id, cmd_id))
@@ -86,6 +89,11 @@ class RobotModel:
         x = map_x * resolution
         y = - temp_y * resolution
         return x, y
+
+    def stop_robot(self):
+        http_response = requests.get('http://{}:1234/stop_robot'.format(self.ip))
+        self.node.get_logger().info(http_response.text)
+
     
     def post_dest_to_robot(self):
         if self.path_remaining[0].level_name == 'run_nest_action':
