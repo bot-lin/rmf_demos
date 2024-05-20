@@ -36,6 +36,7 @@ class RobotModel:
             self.path_remaining = []
             self.path_remaining.append(path[-1])
             if path[0] == path[-1]:
+                self.node.get_logger().info("Stop robot")
                 self.stop_robot()
             else:
                 self.post_dest_to_robot()
