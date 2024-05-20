@@ -124,7 +124,7 @@ class RobotModel:
             "use_pyr": True,
             "precision_xy": 0.1,
             "precision_yaw": 0.1,
-            "is_reverse": False,
+            "is_reverse": True,
             "nav_type": "auto",
             "task_id": str(self.task_id),
             "inflation_radius": 1.1
@@ -151,7 +151,7 @@ class RobotModel:
         if stationary:
             return 0
         else:
-            return 1
+            return 2
 
 
 
