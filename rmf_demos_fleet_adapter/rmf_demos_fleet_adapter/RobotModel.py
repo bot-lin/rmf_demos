@@ -122,7 +122,7 @@ class RobotModel:
                 }
             },
             "use_pyr": True,
-            "precision_xy": 0.1,
+            "precision_xy": 0.02,
             "precision_yaw": 6.0,
             "is_reverse": True,
             "nav_type": "auto",
@@ -135,7 +135,7 @@ class RobotModel:
         if json.loads(http_response.text)["code"] == 0:
             pass
 
-    def close_enough_to_goal(self, x1, y1, threshold=0.4):
+    def close_enough_to_goal(self, x1, y1, threshold=0.1):
         if len(self.path_remaining) > 0:
             x2 = self.path_remaining[0].x
             y2 = self.path_remaining[0].y
@@ -145,10 +145,12 @@ class RobotModel:
         return False
     
     def check_robot_mode(self, data_dict):
+        if data_dict['sm'] == 1:
+            return 4
         eps = 0.01
         speed = data_dict['speed']
         stationary = abs(speed['linear']) < eps and abs(speed['angular']) < eps
-        if stationary:
+        if len(self.path_remaining) == 0:
             return 0
         else:
             return 2
