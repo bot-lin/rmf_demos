@@ -33,10 +33,10 @@ rmf_fleet:
   finishing_request: "charge" # [park, charge, nothing]
   responsive_wait: True # Should responsive wait be on/off for the whole fleet by default? False if not specified.
   robots:
-    # tinyrobo22:
-    #     charger: "d22"
-    #     responsive_wait: False # Should responsive wait be on/off for this specific robot? Overrides the fleet-wide setting.
-    #     ip: "10.1.17.114"
+    tinyrobo22:
+        charger: "d22"
+        responsive_wait: False # Should responsive wait be on/off for this specific robot? Overrides the fleet-wide setting.
+        ip: "10.1.17.114"
     tinyrobot15:
         charger: "d15"
         responsive_wait: False # Should responsive wait be on/off for this specific robot? Overrides the fleet-wide setting.
