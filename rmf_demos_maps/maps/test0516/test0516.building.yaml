@@ -102,6 +102,10 @@ levels:
       - [21, 71, {bidirectional: [4, true], demo_mock_floor_name: [1, ""], demo_mock_lift_name: [1, ""], graph_idx: [2, 0], mutex: [1, ""], orientation: [1, ""], speed_limit: [3, 0]}]
       - [71, 72, {bidirectional: [4, true], demo_mock_floor_name: [1, ""], demo_mock_lift_name: [1, ""], graph_idx: [2, 0], mutex: [1, ""], orientation: [1, ""], speed_limit: [3, 0]}]
       - [72, 22, {bidirectional: [4, true], demo_mock_floor_name: [1, ""], demo_mock_lift_name: [1, ""], graph_idx: [2, 0], mutex: [1, ""], orientation: [1, ""], speed_limit: [3, 0]}]
+      - [35, 73, {bidirectional: [4, true], demo_mock_floor_name: [1, ""], demo_mock_lift_name: [1, ""], graph_idx: [2, 0], mutex: [1, ""], orientation: [1, ""], speed_limit: [3, 0]}]
+      - [22, 74, {bidirectional: [4, true], demo_mock_floor_name: [1, ""], demo_mock_lift_name: [1, ""], graph_idx: [2, 0], mutex: [1, ""], orientation: [1, ""], speed_limit: [3, 0]}]
+      - [18, 75, {bidirectional: [4, true], demo_mock_floor_name: [1, ""], demo_mock_lift_name: [1, ""], graph_idx: [2, 0], mutex: [1, ""], orientation: [1, ""], speed_limit: [3, 0]}]
+      - [14, 76, {bidirectional: [4, true], demo_mock_floor_name: [1, ""], demo_mock_lift_name: [1, ""], graph_idx: [2, 0], mutex: [1, ""], orientation: [1, ""], speed_limit: [3, 0]}]
     layers:
       path:
         color: [1, 0, 0, 0.5]
@@ -188,5 +192,9 @@ levels:
       - [356.94600000000003, 314.077, 0, ""]
       - [397.78699999999998, 320.072, 0, ""]
       - [418.76999999999998, 322.69400000000002, 0, ""]
+      - [467.61000000000001, 347.70999999999998, 0, t6]
+      - [468.73399999999998, 328.22699999999998, 0, t7]
+      - [468.73399999999998, 302.37299999999999, 0, t8]
+      - [469.10899999999998, 278.76799999999997, 0, t9]
 lifts: {}
 name: test0516
