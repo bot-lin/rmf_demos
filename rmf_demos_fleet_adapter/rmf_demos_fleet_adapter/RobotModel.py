@@ -145,7 +145,7 @@ class RobotModel:
         return False
     
     def check_robot_mode(self, data_dict):
-        if data_dict['cm'] == 1:
+        if data_dict['cm'] == 1 and len(self.path_remaining) > 0:
             return 4
         eps = 0.01
         speed = data_dict['speed']
