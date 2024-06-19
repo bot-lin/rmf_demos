@@ -15,8 +15,8 @@
   <group>
     <include file="$(find-pkg-share rmf_demos_fleet_adapter)/launch/fleet_adapter_ws.launch.xml">
       <arg name="use_sim_time" value="$(var use_sim_time)"/>
-      <arg name="nav_graph_file" value="$(find-pkg-share rmf_demos_maps)/maps/test0516/nav_graphs/0.yaml" />
-      <arg name="config_file" value="$(find-pkg-share rmf_demos)/config/test0516/tinyRobot_config.yaml"/>
+      <arg name="nav_graph_file" value="$(find-pkg-share rmf_demos_maps)/maps/start/nav_graphs/0.yaml" />
+      <arg name="config_file" value="$(find-pkg-share rmf_demos)/config/start/tinyRobot_config.yaml"/>
     </include>
   </group>
 
