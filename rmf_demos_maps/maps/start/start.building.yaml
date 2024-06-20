@@ -598,9 +598,9 @@ levels:
     measurements:
       - - 0 
         - 1 
-        - {distance: 
+        - distance: 
           - 3 
-          - 5.25547333}
+          - 5.25547333
     vertices:
     - - 817.0
       - 1756.0
