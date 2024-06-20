@@ -17,6 +17,7 @@ class RobotModel:
         self.node = node    
         self.robot_state_publisher_ = self.node.create_publisher(RobotState, 'robot_state', 10)
         self.get_map_info()
+        self.set_robot_fleet_name()
         
     
     def __str__(self):
@@ -164,7 +165,7 @@ class RobotModel:
         while True:
             try:
                 websocket = await websockets.connect(uri)
-                self.set_robot_fleet_name()
+                
                 print("Connected to WebSocket")
                 break
             except (OSError, websockets.exceptions.WebSocketException) as e:
