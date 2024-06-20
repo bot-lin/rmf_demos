@@ -1,6 +1,8 @@
 import requests
 import json
 import websockets
+import asyncio
+
 from rmf_fleet_msgs.msg import RobotState
 
 class RobotModel:
@@ -158,9 +160,15 @@ class RobotModel:
 
 
     async def start(self, uri):
-        # await self.connect_to_websocket(uri)
-        websocket = await websockets.connect(uri)
         seq = 0
+        while True:
+            try:
+                websocket = await websockets.connect(uri)
+                print("Connected to WebSocket")
+                break
+            except (OSError, websockets.exceptions.WebSocketException) as e:
+                await asyncio.sleep(2)  # 等待一段时间后再次尝试
+
         while True:
             seq += 1
             message = await websocket.recv()
