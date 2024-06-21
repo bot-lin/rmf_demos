@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-# Copyright 2022 Open Source Robotics Foundation, Inc.
+# Copyright 2024 Open Source Robotics Foundation, Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -27,11 +27,11 @@ from rclpy.qos import QoSDurabilityPolicy as Durability
 from rclpy.qos import QoSHistoryPolicy as History
 from rclpy.qos import QoSProfile
 from rclpy.qos import QoSReliabilityPolicy as Reliability
-from rmf_task_msgs.msg import ApiRequest
-from rmf_task_msgs.msg import ApiResponse
+
+from rmf_task_msgs.msg import ApiRequest, ApiResponse
+
 
 ###############################################################################
-
 
 class TaskRequester(Node):
 
@@ -39,69 +39,58 @@ class TaskRequester(Node):
         super().__init__('task_requester')
         parser = argparse.ArgumentParser()
         parser.add_argument(
-            '-p',
-            '--places',
+            '-c', '--category',
+            type=str,
+            default='compose',
+            help='Set the category of the task'
+        )
+        parser.add_argument(
+            '-f', '--file',
             required=True,
-            nargs='+',
             type=str,
-            help='Places to patrol through',
+            help='File containing a task description formatted in json'
         )
         parser.add_argument(
-            '-n',
-            '--rounds',
-            help='Number of loops to perform',
-            type=int,
-            default=1,
-        )
-        parser.add_argument(
-            '-F',
-            '--fleet',
+            '-F', '--fleet',
             type=str,
-            help='Fleet name, should define together with robot',
+            help='Fleet name, should define together with robot'
         )
         parser.add_argument(
-            '-R',
-            '--robot',
+            '-R', '--robot',
             type=str,
-            help='Robot name, should define together with fleet',
+            help='Robot name, should define together with fleet'
         )
         parser.add_argument(
-            '-st',
-            '--start_time',
-            help='Start time from now in secs, default: 0',
+            '-st', '--start_time',
             type=int,
             default=0,
+            help='Start time from now in secs, default: 0'
         )
         parser.add_argument(
-            '-pt',
-            '--priority',
-            help='Priority value for this request',
+            '-pt', '--priority',
             type=int,
             default=0,
+            help='Priority value for this request'
         )
         parser.add_argument(
             '--use_sim_time',
             action='store_true',
-            help='Use sim time, default: false',
-        )
-        parser.add_argument(
-            '--requester',
-            help='Entity that is requesting this task',
-            type=str,
-            default='rmf_demos_tasks'
+            help='Use sim time, default: false'
         )
 
         self.args = parser.parse_args(argv[1:])
         self.response = asyncio.Future()
 
+        with open(self.args.file) as f:
+            description = json.load(f)
+
         transient_qos = QoSProfile(
             history=History.KEEP_LAST,
             depth=1,
             reliability=Reliability.RELIABLE,
-            durability=Durability.TRANSIENT_LOCAL,
-        )
+            durability=Durability.TRANSIENT_LOCAL)
         self.pub = self.create_publisher(
-            ApiRequest, 'task_api_requests', transient_qos
+          ApiRequest, 'task_api_requests', transient_qos
         )
 
         # enable ros sim time
@@ -112,7 +101,7 @@ class TaskRequester(Node):
 
         # Construct task
         msg = ApiRequest()
-        msg.request_id = 'patrol_' + str(uuid.uuid4())
+        msg.request_id = 'task_' + str(uuid.uuid4())
         payload = {}
 
         if self.args.robot and self.args.fleet:
@@ -126,24 +115,17 @@ class TaskRequester(Node):
 
         request = {}
 
-        # Set task request request time and start time
+        # Set task request start time
         now = self.get_clock().now().to_msg()
         now.sec = now.sec + self.args.start_time
-        start_time = now.sec * 1000 + round(now.nanosec / 10**6)
-        request['unix_millis_request_time'] = start_time
+        start_time = now.sec * 1000 + round(now.nanosec/10**6)
         request['unix_millis_earliest_start_time'] = start_time
         # todo(YV): Fill priority after schema is added
 
-        request['requester'] = self.args.requester
-
         # Define task request category
-        request['category'] = 'patrol'
-
-        if self.args.fleet:
-            request['fleet_name'] = self.args.fleet
+        request['category'] = self.args.category
 
         # Define task request description
-        description = {'places': self.args.places, 'rounds': self.args.rounds}
         request['description'] = description
         payload['request'] = request
         msg.json_msg = json.dumps(payload)
@@ -170,8 +152,7 @@ def main(argv=sys.argv):
 
     task_requester = TaskRequester(args_without_ros)
     rclpy.spin_until_future_complete(
-        task_requester, task_requester.response, timeout_sec=5.0
-    )
+        task_requester, task_requester.response, timeout_sec=5.0)
     if task_requester.response.done():
         print(f'Got response:\n{task_requester.response.result()}')
     else:

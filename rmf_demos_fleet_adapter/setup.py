@@ -8,7 +8,7 @@ package_name = 'rmf_demos_fleet_adapter'
 
 setup(
     name=package_name,
-    version='2.2.3',
+    version='2.4.0',
     packages=find_packages(),
     data_files=[
         (
@@ -34,7 +34,7 @@ setup(
         'console_scripts': [
             'fleet_adapter=rmf_demos_fleet_adapter.fleet_adapter:main',
             'fleet_manager=rmf_demos_fleet_adapter.fleet_manager:main',
-            'fleet_ws=rmf_demos_fleet_adapter.fleet_ws:main',
+            'manage_lane=rmf_demos_fleet_adapter.manage_lane:main',
         ],
     },
 )

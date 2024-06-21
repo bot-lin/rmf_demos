@@ -75,13 +75,13 @@ class TaskRequester(Node):
             '-F',
             '--fleet',
             type=str,
-            help='Fleet name, should define tgt with robot',
+            help='Fleet name, should define together with robot',
         )
         parser.add_argument(
             '-R',
             '--robot',
             type=str,
-            help='Robot name, should define tgt with fleet',
+            help='Robot name, should define together with fleet',
         )
         parser.add_argument(
             '--use_sim_time',
@@ -93,6 +93,12 @@ class TaskRequester(Node):
             action='store_true',
             help='Use tool sink during perform action, \
                                 default: false',
+        )
+        parser.add_argument(
+            '--requester',
+            help='Entity that is requesting this task',
+            type=str,
+            default='rmf_demos_tasks'
         )
 
         self.args = parser.parse_args(argv[1:])
@@ -129,12 +135,15 @@ class TaskRequester(Node):
             payload['type'] = 'dispatch_task_request'
         request = {}
 
-        # Set task request start time
+        # Set task request request time and start time
         now = self.get_clock().now().to_msg()
         now.sec = now.sec + self.args.start_time
         start_time = now.sec * 1000 + round(now.nanosec / 10**6)
+        request['unix_millis_request_time'] = start_time
         request['unix_millis_earliest_start_time'] = start_time
         # todo(YV): Fill priority after schema is added
+
+        request['requester'] = self.args.requester
 
         # Define task request category
         request['category'] = 'compose'

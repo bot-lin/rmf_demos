@@ -4,7 +4,7 @@ package_name = 'rmf_demos_tasks'
 
 setup(
     name=package_name,
-    version='2.2.3',
+    version='2.4.0',
     packages=[package_name],
     data_files=[
         (
@@ -36,7 +36,8 @@ setup(
             'dispatch_teleop = rmf_demos_tasks.dispatch_teleop:main',
             'mock_docker = rmf_demos_tasks.mock_docker:main',
             'teleop_robot = rmf_demos_tasks.teleop_robot:main',
-            'dispatch_nest_action = rmf_demos_tasks.dispatch_nest_action:main',
+            'dispatch_json = rmf_demos_tasks.dispatch_json:main',
+            'api_request = rmf_demos_tasks.api_request:main',
         ],
     },
 )

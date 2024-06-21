@@ -138,6 +138,9 @@ def main(argv=sys.argv):
         )
 
     def update_loop():
+        reassign_task_interval = config_yaml['rmf_fleet'].get(
+            'reassign_task_interval', 60)  # seconds
+        last_task_replan = node.get_clock().now()
         asyncio.set_event_loop(asyncio.new_event_loop())
         while rclpy.ok():
             now = node.get_clock().now()
@@ -151,6 +154,12 @@ def main(argv=sys.argv):
                 asyncio.wait(update_jobs)
             )
 
+            interval_sec = (now.nanoseconds -
+                            last_task_replan.nanoseconds) / 1e9
+            if interval_sec > reassign_task_interval:
+                fleet_handle.more().reassign_dispatched_tasks()
+                last_task_replan = now
+
             next_wakeup = now + Duration(nanoseconds=update_period * 1e9)
             while node.get_clock().now() < next_wakeup:
                 time.sleep(0.001)
@@ -159,7 +168,8 @@ def main(argv=sys.argv):
     update_thread.start()
 
     # Connect to the extra ROS2 topics that are relevant for the adapter
-    ros_connections(node, robots, fleet_handle)
+    connections = ros_connections(node, robots, fleet_handle)
+    connections  # Avoid unused variable warning
 
     # Create executor for the command handle node
     rclpy_executor = rclpy.executors.SingleThreadedExecutor()
@@ -444,11 +454,18 @@ def ros_connections(node, robots, fleet_handle):
     closed_lanes = set()
 
     def lane_request_cb(msg):
-        if msg.fleet_name is None or msg.fleet_name != fleet_name:
+        if msg.fleet_name and msg.fleet_name != fleet_name:
+            print(f'Ignoring lane request for fleet [{msg.fleet_name}]')
             return
 
-        fleet_handle.open_lanes(msg.open_lanes)
-        fleet_handle.close_lanes(msg.close_lanes)
+        if msg.open_lanes:
+            print(f'Opening lanes: {msg.open_lanes}')
+
+        if msg.close_lanes:
+            print(f'Closing lanes: {msg.close_lanes}')
+
+        fleet_handle.more().open_lanes(msg.open_lanes)
+        fleet_handle.more().close_lanes(msg.close_lanes)
 
         for lane_idx in msg.close_lanes:
             closed_lanes.add(lane_idx)
@@ -475,19 +492,24 @@ def ros_connections(node, robots, fleet_handle):
                 return
             robot.finish_action()
 
-    node.create_subscription(
+    lane_request_sub = node.create_subscription(
         LaneRequest,
         'lane_closure_requests',
         lane_request_cb,
         qos_profile=qos_profile_system_default,
     )
 
-    node.create_subscription(
+    action_execution_notice_sub = node.create_subscription(
         ModeRequest,
         'action_execution_notice',
         mode_request_cb,
         qos_profile=qos_profile_system_default,
     )
+
+    return [
+        lane_request_sub,
+        action_execution_notice_sub,
+    ]
 
 
 if __name__ == '__main__':
