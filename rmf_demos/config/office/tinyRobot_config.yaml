@@ -44,7 +44,7 @@ rmf_fleet:
         charger: "tinyRobot4_charger"
     tinyRobot5:
         charger: "tinyRobot5_charger"
-        No mention of responsive_wait means the fleet-wide setting will be used
+        # No mention of responsive_wait means the fleet-wide setting will be used
 
 fleet_manager:
   ip: "127.0.0.1"
