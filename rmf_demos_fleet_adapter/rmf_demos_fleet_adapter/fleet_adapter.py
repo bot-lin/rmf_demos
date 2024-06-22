@@ -208,8 +208,8 @@ class RobotAdapter:
 
     def make_callbacks(self):
         return rmf_easy.RobotCallbacks(
-            lambda destination, execution, description: self.navigate(
-                destination, execution, description
+            lambda destination, execution: self.navigate(
+                destination, execution
             ),
             lambda activity: self.stop(activity),
             lambda category, description, execution: self.execute_action(
@@ -217,11 +217,9 @@ class RobotAdapter:
             ),
         )
 
-    def navigate(self, destination, execution, description):
+    def navigate(self, destination, execution):
         self.cmd_id += 1
         self.execution = execution
-        self.node.get_logger().info(
-            "navigate description: {}".format(description))
         self.node.get_logger().info(
             "navigate destination: {}".format(destination))
         self.node.get_logger().info(
