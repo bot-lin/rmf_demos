@@ -221,6 +221,8 @@ class RobotAdapter:
         self.cmd_id += 1
         self.execution = execution
         self.node.get_logger().info(
+            "navigate execution: {}".format(execution))
+        self.node.get_logger().info(
             f'Commanding [{self.name}] to navigate to {destination.position} '
             f'on map [{destination.map}]: cmd_id {self.cmd_id}'
         )
