@@ -62,6 +62,7 @@ class RobotAPI:
         pose,
         map_name: str,
         speed_limit=0.0,
+        is_reverse=False,
     ):
         """
         Request the robot to navigate to pose:[x,y,theta].
@@ -80,6 +81,7 @@ class RobotAPI:
         data['map_name'] = map_name
         data['destination'] = {'x': pose[0], 'y': pose[1], 'yaw': pose[2]}
         data['speed_limit'] = speed_limit
+        data['is_reverse'] = is_reverse
         try:
             response = requests.post(url, timeout=self.timeout, json=data)
             response.raise_for_status()

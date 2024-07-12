@@ -262,6 +262,7 @@ class FleetManager(Node):
             target_loc.yaw = target_yaw
             target_loc.level_name = target_map
             target_loc.obey_approach_speed_limit = False
+            target_loc.is_reverse = True
             if target_speed_limit is not None and target_speed_limit > 0.0:
                 target_loc.obey_approach_speed_limit = True
                 target_loc.approach_speed_limit = target_speed_limit
@@ -355,6 +356,15 @@ class FleetManager(Node):
                 target_loc.y = cur_loc.y + 10.0
                 target_loc.level_name = "run_nest_action"
                 target_loc.index = int(action_id)
+                path_request.path.append(target_loc)
+            elif request.activity in ['go_to']:
+                desc = json.loads(request.label)
+                target_loc = Location()
+                target_loc.x = desc['position'][0]
+                target_loc.y = desc['position'][1]
+                target_loc.yaw = desc['position'][2]
+                target_loc.is_reverse = desc['is_reverse']
+                target_loc.level_name = "go_to"
                 path_request.path.append(target_loc)
             else:
                 activity_path = self.action_paths[request.activity][request.label]

@@ -20,19 +20,18 @@
 
 
 import asyncio
-import json
-from typing import Callable, Dict, List, Optional, Tuple
-
 import websockets
+import json
+from typing import Callable, Optional, List, Dict, Tuple
 
 #####################################################################
 
 
 class RmfMsgType:
-    FleetState = 'fleet_state_update'
-    TaskState = 'task_state_update'
-    TaskLog = 'task_log_update'
-    FleetLog = 'fleet_log_update'
+    FleetState = "fleet_state_update"
+    TaskState = "task_state_update"
+    TaskLog = "task_log_update"
+    FleetLog = "fleet_log_update"
 
 
 """
@@ -46,27 +45,26 @@ and only return the useful data according to the provided filter args
 
 
 def filter_rmf_msg(
-    json_str: str, filters: Dict[RmfMsgType, List[str]] = {}
+        json_str: str,
+        filters: Dict[RmfMsgType, List[str]] = {}
 ) -> Optional[Tuple[RmfMsgType, Dict]]:
     obj = json.loads(json_str)
-    if 'type' not in obj:
-        print('ERRORRRR: type is not avail as json key')
+    if "type" not in obj:
+        print("ERRORRRR: type is not avail as json key")
         return None
 
-    if obj['type'] not in filters:
+    if obj["type"] not in filters:
         return None
 
-    msg_type = obj['type']
-    data = obj['data']
+    msg_type = obj["type"]
+    data = obj["data"]
     if not filters[msg_type]:  # empty list
         return msg_type, data
 
     for filter in filters[msg_type]:
         if filter not in data:
-            print(
-                f' Key ERROR!!, indicated data_filter: '
-                '[{filter}] is not avail in {data}'
-            )
+            print(f" Key ERROR!!, indicated data_filter: "
+                  "[{filter}] is not avail in {data}")
             return None
 
         data = data[filter]
@@ -87,18 +85,20 @@ class AsyncRmfMsgObserver:
     :param data_filter:  detailed filter different levels of the data obj
     """
 
-    def __init__(
-        self,
-        callback_fn: Callable[[dict], None],
-        server_url: str = 'localhost',
-        server_port: str = '7878',
-        msg_filters: Dict[RmfMsgType, List[str]] = {},
-    ):
-        print('Starting Websocket Server')
+    def __init__(self,
+                 callback_fn: Callable[[dict], None],
+                 server_url: str = "localhost",
+                 server_port: str = "7878",
+                 msg_filters: Dict[RmfMsgType, List[str]] = {},
+                 node=None
+
+                 ):
+        print("Starting Websocket Server")
         self.callback_fn = callback_fn
         self.server_url = server_url
         self.server_port = server_port
         self.msg_filters = msg_filters
+        self.node = node
 
     """
     This is a blocking function, which will spin the RmfMsgObserver.
@@ -108,12 +108,15 @@ class AsyncRmfMsgObserver:
 
     def spin(self, future=asyncio.Future()):
         self.future = future
+        print("in spin")
         asyncio.run(self.__internal_spin())
 
     async def __msg_handler(self, websocket, path):
+        self.node.get_logger().info("Websocket Server connected: {}".format(path))
         try:
             async for message in websocket:
-                ret_data = filter_rmf_msg(message, self.msg_filters)
+                ret_data = filter_rmf_msg(
+                    message, self.msg_filters)
                 if ret_data:
                     # call the provided callback function
                     msg_type, data = ret_data
@@ -124,12 +127,19 @@ class AsyncRmfMsgObserver:
     async def __check_future(self):
         while not self.future.done():
             await asyncio.sleep(1)  # arbitrary loop freq check
-        print('Received exit signal')
+        print("Received exit signal")
         # TODO(YL): debug the reason why future is not awaitable outside
         # of the loop problem. Thweb_server_spinap_future(self.future)
 
-    async def __internal_spin(self):
-        async with websockets.serve(
-            self.__msg_handler, self.server_url, self.server_port
-        ):
-            await self.__check_future()
+    def generate_websocket(self):
+        return websockets.serve(self.__msg_handler, self.server_url, self.server_port)
+    
+    async def websocket_spin(self, future=asyncio.Future()):
+        self.node.get_logger().info("Starting Websocket Server debug: {}: {}".format(self.server_url, self.server_port))
+        self.future = future
+        async with websockets.serve(self.__msg_handler, self.server_url, self.server_port) as server:
+            self.node.get_logger().info("Websocket Server started: {}".format(server))
+            await asyncio.Future() 
+            self.node.get_logger().info("Websocket Server finished")
+            # await self.__check_future()
+

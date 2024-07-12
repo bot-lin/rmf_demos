@@ -107,7 +107,11 @@ class RobotModel:
         target_x = self.path_remaining[0].x
         target_y = self.path_remaining[0].y
         target_yaw = self.path_remaining[0].yaw
-        map_x, map_y = self.find_map_in_ros(target_x, target_y, origin_x=self.original_x, origin_y=self.original_y, height=self.height)
+        if self.path_remaining[0].level_name == "go_to":
+            map_x, map_y = target_x, target_y
+            self.path_remaining[0].x, self.path_remaining[0].y = self.find_map_in_rmf(target_x, target_y, origin_x=self.original_x, origin_y=self.original_y, height=self.height)
+        else:
+            map_x, map_y = self.find_map_in_ros(target_x, target_y, origin_x=self.original_x, origin_y=self.original_y, height=self.height)
         post_data = {
             "pose": {
                 "position": {
@@ -126,8 +130,8 @@ class RobotModel:
             },
             "use_pyr": True,
             "precision_xy": 0.05,
-            "precision_yaw": 6.0,
-            "is_reverse": True,
+            "precision_yaw": 0.05,
+            "is_reverse": self.path_remaining[0].is_reverse,
             "nav_type": "auto",
             "task_id": str(self.task_id),
             "inflation_radius": 1.1

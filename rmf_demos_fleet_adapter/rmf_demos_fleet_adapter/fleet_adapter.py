@@ -18,6 +18,8 @@ import math
 import sys
 import threading
 import time
+import json
+
 
 import rclpy
 from rclpy.duration import Duration
@@ -245,6 +247,9 @@ class RobotAdapter:
         )
 
     def stop(self, activity):
+        self.node.get_logger().info(
+            f'Commanding [{self.name}] to stop activity [{activity}]'
+        )
         if self.execution is not None:
             if self.execution.identifier.is_same(activity):
                 self.execution = None
@@ -260,6 +265,9 @@ class RobotAdapter:
         self.node.get_logger().info(
             f'Commanding [{self.name}] to execute action [{category}]'
         )
+        self.node.get_logger().info(
+            "the description: {}".format(description)
+        )
 
         match category:
             case 'teleop':
@@ -274,6 +282,12 @@ class RobotAdapter:
             case 'nest_action':
                 self.attempt_cmd_until_success(
                     cmd=self.perform_nest_action, args=(description['action_id'],)
+                )
+            case 'go_to_xy':
+                self.node.get_logger().info("go_to_xy: {}".format(description))
+                self.attempt_cmd_until_success(
+                    cmd=self.perform_go_to,
+                    args=(description,),
                 )
 
     def finish_action(self):
@@ -308,7 +322,25 @@ class RobotAdapter:
                     destination.map,
                     destination.speed_limit,
                 )
-            
+    def perform_go_to(self, go_to_desc):
+        match self.api.start_activity(self.name, self.cmd_id, 'go_to', json.dumps(go_to_desc)):
+            case (RobotAPIResult.SUCCESS, path):
+                self.node.get_logger().info(
+                    f'Commanding [{self.name}] to perform go_to [{go_to_desc}]'
+                )
+                return True
+            case RobotAPIResult.RETRY:
+                self.node.get_logger().warn("need to retry nest action")
+                return False
+            case RobotAPIResult.IMPOSSIBLE:
+                self.node.get_logger().error(
+                    f'Fleet manager for [{self.name}] does not know how to '
+                    f'perform go_to [{go_to_desc}]. We will terminate the activity.'
+                )
+                self.execution.finished()
+                self.execution = None
+                return True
+
     def perform_nest_action(self, action_id):
         match self.api.start_activity(self.name, self.cmd_id, 'nest_action', action_id):
             case (RobotAPIResult.SUCCESS, path):
