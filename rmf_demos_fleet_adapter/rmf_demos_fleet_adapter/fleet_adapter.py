@@ -38,7 +38,6 @@ from rmf_fleet_msgs.msg import LaneRequest
 from rmf_fleet_msgs.msg import ModeRequest
 from rmf_fleet_msgs.msg import RobotMode
 import yaml
-
 from .RobotClientAPI import RobotAPI
 from .RobotClientAPI import RobotAPIResult
 from .RobotClientAPI import RobotUpdateData
@@ -78,7 +77,7 @@ def main(argv=sys.argv):
         help='Use sim time, default: false',
     )
     args = parser.parse_args(args_without_ros[1:])
-    print('Starting fleet adapter...')
+    
 
     config_path = args.config_file
     nav_graph_path = args.nav_graph
@@ -95,6 +94,7 @@ def main(argv=sys.argv):
     # ROS 2 node for the command handle
     fleet_name = fleet_config.fleet_name
     node = rclpy.node.Node(f'{fleet_name}_command_handle')
+    node.get_logger().info('Starting fleet adapter...')
     adapter = Adapter.make(f'{fleet_name}_fleet_adapter')
     assert adapter, (
         'Unable to initialize fleet adapter. '
@@ -122,6 +122,7 @@ def main(argv=sys.argv):
 
     # Initialize robot API for this fleet
     fleet_mgr_yaml = config_yaml['fleet_manager']
+ 
     update_period = 1.0 / fleet_mgr_yaml.get(
         'robot_state_update_frequency', 10.0
     )

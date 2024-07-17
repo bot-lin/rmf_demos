@@ -45,6 +45,8 @@ from rmf_fleet_msgs.msg import PathRequest
 from rmf_fleet_msgs.msg import RobotMode
 from rmf_fleet_msgs.msg import RobotState
 from std_msgs.msg import String
+from rmf_demos_fleet_adapter.fleet_zone import FleetZoneManager
+
 import socketio
 import uvicorn
 import yaml
@@ -105,6 +107,7 @@ class FleetManager(Node):
         self.config = config
         self.fleet_name = self.config['rmf_fleet']['name']
         mgr_config = self.config['fleet_manager']
+        
 
         self.gps = False
         self.offset = [0, 0]
@@ -116,6 +119,7 @@ class FleetManager(Node):
                 self.offset = offset_yaml
 
         super().__init__(f'{self.fleet_name}_fleet_manager')
+        self.zone_manager = FleetZoneManager(self.config['zones'], self)
 
         self.robots = {}  # Map robot name to state
         self.action_paths = {}  # Map activities to paths
@@ -271,8 +275,8 @@ class FleetManager(Node):
             path_request.robot_name = robot_name
             path_request.path.append(target_loc)
             path_request.task_id = str(cmd_id)
+            # threading.Thread(target=self.pub_path_thread, args=(robot_name, path_request, [target_x, target_y])).start()
             self.path_pub.publish(path_request)
-
             if self.debug:
                 print(f'Sending navigate request for {robot_name}: {cmd_id}')
             robot.last_path_request = path_request
@@ -412,7 +416,37 @@ class FleetManager(Node):
             response['success'] = True
             return response
         
-    
+    def pub_path_thread(self, robot_name, path_request, target):
+        is_in_zone, zone_name = self.zone_manager.is_point_in_zone(
+            target
+        )
+        if is_in_zone:
+            while not self.zone_manager.allowed_to_enter_zone(
+                zone_name=zone_name,
+                robot_name=robot_name
+            ):
+                self.get_logger().info(
+                    f'Robot {robot_name} is not allowed to enter zone '
+                    f'{zone_name} yet, waiting...'
+                )
+                vehicle_in_zone = self.zone_manager.get_vehicle_in_zone(
+                    zone_name=zone_name
+                )
+                self.get_logger().info(
+                    f'Since Vehicles in zone {zone_name}: {vehicle_in_zone}'
+                )
+                time.sleep(1)
+            self.zone_manager.add_vehicle_to_zone(
+                robot_name, zone_name
+            )
+        else:
+            #check if leaving zone
+            is_in_zone, zone_name = self.zone_manager.check_vehicle_in_zone(robot_name=robot_name)
+            if is_in_zone:
+                #leave zone
+                self.zone_manager.vehicle_leave_zone(robot_name=robot_name, zone_name=zone_name)
+        self.path_pub.publish(path_request)
+
 
     def robot_state_cb(self, msg):
         

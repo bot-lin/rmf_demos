@@ -60,6 +60,7 @@ class DispatcherClient(Node):
         # TODO remove this
         sim_time_bool = Parameter('use_sim_time', Parameter.Type.BOOL, True)
         self.set_parameters([sim_time_bool])
+        self.new_user_id = None
         self.task_states_cache = {}
 
     def fleet_state_cb(self, msg: FleetState):
@@ -173,7 +174,13 @@ class DispatcherClient(Node):
         """
         state = self.__convert_task_state_msg(json_obj)
         id = state["task_id"]
-        self.task_states_cache[id] = state
+        if id in self.task_states_cache:
+            self.task_states_cache[id]["state"] = state
+        else:
+            self.task_states_cache[id] = {"state": state}
+        if "user_id" not in self.task_states_cache[id] and self.new_user_id:
+            self.task_states_cache[id]["user_id"] = self.new_user_id
+            self.new_user_id = None
 
 ###############################################################################
 
@@ -251,8 +258,8 @@ class DispatcherClient(Node):
         assigned_tasks = []
         assigned_task_ids = []
         for _, state in self.task_states_cache.items():
-            if state["robot_name"] == robot_name:
-                assigned_tasks.append(state)
+            if state['state']["robot_name"] == robot_name:
+                assigned_tasks.append(state['state'])
         assigned_tasks.sort(key=lambda x: x.get('start_time'))
         for task in assigned_tasks:
             assigned_task_ids.append(task["task_id"])
@@ -304,7 +311,9 @@ class DispatcherClient(Node):
                 ("start_time" not in task_json) or
                     ("description" not in task_json)):
                 raise Exception("Key value is incomplete")
-
+            
+            if ("user_id" in task_json):
+                self.new_user_id = task_json["user_id"]
             if ("priority" in task_json):
                 priority_val = int(task_json["priority"])
                 if (priority_val < 0):

@@ -16,12 +16,14 @@ import yaml
 import math
 
 from .RobotModel import RobotModel
+from rmf_demos_fleet_adapter.fleet_zone import FleetZoneManager
 
 class WebSocketNode(Node):
     def __init__(self, config):
         super().__init__('websocket_node')
         
         self.fleet_name = config['rmf_fleet']['name']
+        self.zone_manager = FleetZoneManager(config['zones'], self)
         self.robots = self.generate_robot_model(config['rmf_fleet']['robots'])
         self.get_logger().info(f'Robots: {self.robots}')
         self.create_subscription(PathRequest, 'robot_path_requests', self.task_callback, 10)

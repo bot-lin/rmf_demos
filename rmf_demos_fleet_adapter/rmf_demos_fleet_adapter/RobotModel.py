@@ -2,19 +2,24 @@ import requests
 import json
 import websockets
 import asyncio
-
+import time
 from rmf_fleet_msgs.msg import RobotState
+from threading import Lock
 
 class RobotModel:
     def __init__(self, ip, fleet_name, robot_name, node):
         self.path_remaining = []
+        self.path_remaining_lock = Lock() 
+        self.last_post_path = None
         self.task_id = ''
         self.connected = False
         self.pose = None
         self.fleet_name = fleet_name
         self.robot_name = robot_name
         self.ip = ip
-        self.node = node    
+        self.node = node   
+        self.waiting_for_zone = False
+        self.zone_manager = node.zone_manager 
         self.robot_state_publisher_ = self.node.create_publisher(RobotState, 'robot_state', 10)
         self.get_map_info()
         self.set_robot_fleet_name()
@@ -36,14 +41,21 @@ class RobotModel:
         if self.path_request_valid(path, task_id):
             self.node.get_logger().info("Path is Valid")
             self.task_id = task_id
-            self.path_remaining = []
-            self.path_remaining.append(path[-1])
+            with self.path_remaining_lock:
+                self.path_remaining = []
+                length = self.get_path_length(path)
+                self.path_remaining.append((path[-1], length))
             if path[0] == path[-1]:
                 self.node.get_logger().info("################")
                 self.node.get_logger().info("# Stop robot   #")
                 self.stop_robot()
-            else:
-                self.post_dest_to_robot()
+            # else:
+            #     self.post_dest_to_robot()
+            
+    def get_path_length(self, path):
+        start = path[0]
+        end = path[-1]
+        return ((start.x - end.x)**2 + (start.y - end.y)**2)**0.5
     
     def start_nest_action(self, action_id, cmd_id):
         http_response = requests.get('http://{}:5000/deploy/executeAction/{}/{}'.format(self.ip, action_id, cmd_id))
@@ -101,17 +113,20 @@ class RobotModel:
 
     
     def post_dest_to_robot(self):
-        if self.path_remaining[0].level_name == 'run_nest_action':
-            self.start_nest_action(self.path_remaining[0].index, self.task_id)
+        
+        if self.path_remaining[0][0].level_name == 'run_nest_action':
+            self.last_post_path = self.path_remaining[0][0]
+            self.start_nest_action(self.path_remaining[0][0].index, self.task_id)
             return
-        target_x = self.path_remaining[0].x
-        target_y = self.path_remaining[0].y
-        target_yaw = self.path_remaining[0].yaw
-        if self.path_remaining[0].level_name == "go_to":
+        target_x = self.path_remaining[0][0].x
+        target_y = self.path_remaining[0][0].y
+        target_yaw = self.path_remaining[0][0].yaw
+        if self.path_remaining[0][0].level_name == "go_to":
             map_x, map_y = target_x, target_y
-            self.path_remaining[0].x, self.path_remaining[0].y = self.find_map_in_rmf(target_x, target_y, origin_x=self.original_x, origin_y=self.original_y, height=self.height)
+            self.path_remaining[0][0].x, self.path_remaining[0][0].y = self.find_map_in_rmf(target_x, target_y, origin_x=self.original_x, origin_y=self.original_y, height=self.height)
         else:
             map_x, map_y = self.find_map_in_ros(target_x, target_y, origin_x=self.original_x, origin_y=self.original_y, height=self.height)
+        self.last_post_path = self.path_remaining[0][0]
         post_data = {
             "pose": {
                 "position": {
@@ -131,27 +146,72 @@ class RobotModel:
             "use_pyr": True,
             "precision_xy": 0.05,
             "precision_yaw": 0.05,
-            "is_reverse": self.path_remaining[0].is_reverse,
+            "is_reverse": self.path_remaining[0][0].is_reverse,
             "nav_type": "auto",
             "task_id": str(self.task_id),
             "inflation_radius": 1.1
         }
+        if not self.pub_path_thread(self.robot_name, [self.path_remaining[0][0].x, self.path_remaining[0][0].y]):
+            self.last_post_path = None
+            return
+        # is_in_zone, zone_name = self.zone_manager.is_point_in_zone([self.path_remaining[0].x, self.path_remaining[0].y])
+        # if is_in_zone:
+        #     while not self.zone_manager.allowed_to_enter_zone([self.path_remaining[0].x, self.path_remaining[0].y]):
+        #         self.node.get_logger().info("Robot: {} ".format(self.robot_name) + "Waiting to enter zone")
+        #         time.sleep(1)
+        #     self.zone_manager.add_vehicle_to_zone([self.path_remaining[0].x, self.path_remaining[0].y], zone_name)
+
+        self.waiting_for_zone = False
         http_response = requests.post('http://{}:1234/go_to_simple'.format(self.ip), json=post_data)
         print_string = "Robot: {} ".format(self.robot_name) + "Go to simple response: {} ".format(http_response.text) + "map_x: {}, map_y: {} ".format(map_x, map_y) + "target_x: {}, target_y: {}".format(target_x, target_y)
         self.node.get_logger().info(print_string)
         if json.loads(http_response.text)["code"] == 0:
             pass
 
-    def close_enough_to_goal(self, x1, y1, threshold=0.2):
+    def pub_path_thread(self, robot_name, target):
+        is_in_zone, zone_name = self.zone_manager.is_point_in_zone(target)
+        if is_in_zone:
+            if self.zone_manager.allowed_to_enter_zone(zone_name=zone_name, robot_name=robot_name):
+                self.zone_manager.add_vehicle_to_zone(robot_name, zone_name)
+                return True
+            else:
+                self.node.get_logger().info(
+                    f'Robot {robot_name} is not allowed to enter zone '
+                    f'{zone_name} yet, waiting...'
+                )
+                vehicle_in_zone = self.zone_manager.get_vehicle_in_zone(
+                    zone_name=zone_name
+                )
+                self.node.get_logger().info(
+                    f'Since Vehicles in zone {zone_name}: {vehicle_in_zone}'
+                )
+                self.waiting_for_zone = True
+                return False
+        else:
+            #check if leaving zone
+            is_in_zone, zone_name = self.zone_manager.check_vehicle_in_zone(robot_name=robot_name)
+            if is_in_zone:
+                #leave zone
+                self.zone_manager.vehicle_leave_zone(robot_name=robot_name, zone_name=zone_name)
+        return True
+
+    def close_enough_to_goal(self, x1, y1):
         if len(self.path_remaining) > 0:
-            x2 = self.path_remaining[0].x
-            y2 = self.path_remaining[0].y
+            x2 = self.path_remaining[0][0].x
+            y2 = self.path_remaining[0][0].y
             distance = ((x1 - x2)**2 + (y1 - y2)**2)**0.5
+            threshold = self.path_remaining[0][1] / 2
+            if threshold > 1.0:
+                threshold = 1.0
+            elif threshold < 0.2:
+                threshold = 0.2
             if distance < threshold:
                 return True
         return False
     
     def check_robot_mode(self, data_dict):
+        if self.waiting_for_zone:
+            return 3
         if data_dict['cm'] == 1 and len(self.path_remaining) > 0:
             return 4
         eps = 0.01
@@ -196,13 +256,10 @@ class RobotModel:
             if self.close_enough_to_goal(x, y) or data_dict['fsm'] in ['succeeded', 'canceled', 'failed']:
                 if len(self.path_remaining) > 0:
                     tmp = self.path_remaining.pop(0)
-                    if self.robot_name == 'tinyrobot2':
-
-                        self.node.get_logger().info("*************\n Robot: {} \n".format(self.robot_name) + "Path remaining: {} \n".format(self.path_remaining) + "Popped: {}\n".format(tmp))
                 self.confirm_robot_state(data_dict)
                 
                 # self.task_id = ''
-            data_ros.path = self.path_remaining
+            data_ros.path = [path for path, length in self.path_remaining]
             data_ros.task_id = self.task_id
             
             # self.confirm_robot_state(data_dict, data_ros.name)
@@ -217,4 +274,7 @@ class RobotModel:
             # if self.robot_current_path[data_ros.name] is not None:
             #     data_ros.path.append(self.robot_current_path[data_ros.name])
             self.robot_state_publisher_.publish(data_ros)
+            if len(self.path_remaining) > 0  and (self.last_post_path != self.path_remaining[0][0]):
+                with self.path_remaining_lock:
+                    self.post_dest_to_robot()
 
