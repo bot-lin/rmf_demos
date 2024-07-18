@@ -366,7 +366,7 @@ class FleetManager(Node):
                 target_loc = Location()
                 target_loc.x = desc['position'][0]
                 target_loc.y = desc['position'][1]
-                target_loc.yaw = desc['position'][2]
+                target_loc.yaw = math.radians(desc['position'][2])
                 target_loc.is_reverse = desc['is_reverse']
                 target_loc.level_name = "go_to"
                 path_request.path.append(target_loc)

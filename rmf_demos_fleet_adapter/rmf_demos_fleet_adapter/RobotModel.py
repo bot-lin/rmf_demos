@@ -2,7 +2,7 @@ import requests
 import json
 import websockets
 import asyncio
-import time
+import math
 from rmf_fleet_msgs.msg import RobotState
 from threading import Lock
 
@@ -121,6 +121,10 @@ class RobotModel:
         target_x = self.path_remaining[0][0].x
         target_y = self.path_remaining[0][0].y
         target_yaw = self.path_remaining[0][0].yaw
+        if self.path_remaining[0][0].is_reverse:
+            target_yaw += math.pi
+            if target_yaw > math.pi:
+                target_yaw -= 2 * math.pi
         if self.path_remaining[0][0].level_name == "go_to":
             map_x, map_y = target_x, target_y
             self.path_remaining[0][0].x, self.path_remaining[0][0].y = self.find_map_in_rmf(target_x, target_y, origin_x=self.original_x, origin_y=self.original_y, height=self.height)
@@ -211,7 +215,7 @@ class RobotModel:
     
     def check_robot_mode(self, data_dict):
         if self.waiting_for_zone:
-            return 3
+            return 4
         if data_dict['cm'] == 1 and len(self.path_remaining) > 0:
             return 4
         eps = 0.01
