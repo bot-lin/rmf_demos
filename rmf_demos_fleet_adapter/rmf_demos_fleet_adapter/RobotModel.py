@@ -21,6 +21,7 @@ class RobotModel:
         self.waiting_for_zone = False
         self.zone_manager = node.zone_manager 
         self.robot_state_publisher_ = self.node.create_publisher(RobotState, 'robot_state', 10)
+        self.last_pub_data = None
         self.get_map_info()
         self.set_robot_fleet_name()
         
@@ -238,6 +239,8 @@ class RobotModel:
             except Exception as e:
                 self.node.get_logger().info(f"Unexpected error: {e}. Retrying in 5 seconds...")
                 await asyncio.sleep(5)
+            if self.last_pub_data is not None:
+                self.robot_state_publisher_.publish(self.last_pub_data)
 
     async def websocket_handling_logic(self, websocket):
         try:
@@ -269,6 +272,7 @@ class RobotModel:
                 data_ros.task_id = self.task_id
             
                 self.robot_state_publisher_.publish(data_ros)
+                self.last_pub_data = data_ros
                 if len(self.path_remaining) > 0  and (self.last_post_path != self.path_remaining[0][0]):
                     with self.path_remaining_lock:
                         self.post_dest_to_robot()
