@@ -227,14 +227,64 @@ class RobotModel:
             return 2
 
 
+    async def connect_to_websocket(self, uri):
+        while True:
+            try:
+                async with websockets.connect(uri, ping_timeout=30) as websocket:
+                    await self.websocket_handling_logic(websocket)
+            except (websockets.exceptions.ConnectionClosedError, asyncio.exceptions.CancelledError) as e:
+                self.node.get_logger().info(f"WebSocket connection closed: {e}. Retrying in 5 seconds...")
+                await asyncio.sleep(5)
+            except Exception as e:
+                self.node.get_logger().info(f"Unexpected error: {e}. Retrying in 5 seconds...")
+                await asyncio.sleep(5)
 
-    async def start(self, uri):
+    async def websocket_handling_logic(self, websocket):
+        try:
+            while True:
+                seq += 1
+                message = await websocket.recv()
+                data_dict = json.loads(message)
+                data_ros = RobotState()
+                data_ros.name = data_dict['robot_name']
+                data_ros.model = data_dict['fleet_name']
+                
+                data_ros.seq = seq 
+                x, y = self.find_map_in_rmf(float(data_dict['pose']['position']['x']), float(data_dict['pose']['position']['y']), origin_x=self.original_x, origin_y=self.original_y, height=self.height)
+                data_ros.battery_percent = 100.0 #float(data_dict['battery'])
+                data_ros.location.x = x
+                data_ros.location.y = y
+                data_ros.location.yaw = float(data_dict['pose']['pyr']['yaw'])
+                data_ros.location.level_name = 'L1'
+                data_ros.mode.mode = self.check_robot_mode(data_dict)
+        
+                data_ros.location.t = self.node.get_clock().now().to_msg()
+                if self.close_enough_to_goal(x, y) or data_dict['fsm'] in ['succeeded', 'canceled', 'failed']:
+                    if len(self.path_remaining) > 0:
+                        tmp = self.path_remaining.pop(0)
+                    self.confirm_robot_state(data_dict)
+                    
+                    # self.task_id = ''
+                data_ros.path = [path for path, length in self.path_remaining]
+                data_ros.task_id = self.task_id
+            
+                self.robot_state_publisher_.publish(data_ros)
+                if len(self.path_remaining) > 0  and (self.last_post_path != self.path_remaining[0][0]):
+                    with self.path_remaining_lock:
+                        self.post_dest_to_robot()
+                    # Handle the message received
+                    self.node.get_logger().info(message)
+        except asyncio.CancelledError:
+            self.node.get_logger().info("WebSocket handling task was cancelled")
+
+
+    async def start_backup(self, uri):
         seq = 0
         while True:
             try:
                 websocket = await websockets.connect(uri)
                 
-                print("Connected to WebSocket")
+                self.node.get_logger().info("Connected to WebSocket")
                 break
             except (OSError, websockets.exceptions.WebSocketException) as e:
                 await asyncio.sleep(2)  # 等待一段时间后再次尝试

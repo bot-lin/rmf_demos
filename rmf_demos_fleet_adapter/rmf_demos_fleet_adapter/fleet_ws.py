@@ -53,9 +53,9 @@ class WebSocketNode(Node):
 
         
 def ros2_thread(node):
-    print('entering ros2 thread')
+    node.get_logger().info('entering ros2 thread')
     rclpy.spin(node)
-    print('leaving ros2 thread')
+    node.get_logger().info('leaving ros2 thread')
 
 def main(argv=sys.argv):
     rclpy.init(args=argv)
