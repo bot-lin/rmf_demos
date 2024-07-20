@@ -23,7 +23,7 @@ class RobotModel:
         self.robot_state_publisher_ = self.node.create_publisher(RobotState, 'robot_state', 10)
         self.last_pub_data = None
         self.get_map_info()
-        self.set_robot_fleet_name()
+        
         
     
     def __str__(self):
@@ -228,8 +228,11 @@ class RobotModel:
             return 2
 
 
-    async def connect_to_websocket(self, uri):
+    async def start(self, uri):
+        self.seq = 0
         while True:
+            self.set_robot_fleet_name()
+
             try:
                 async with websockets.connect(uri, ping_timeout=30) as websocket:
                     await self.websocket_handling_logic(websocket)
@@ -243,16 +246,17 @@ class RobotModel:
                 self.robot_state_publisher_.publish(self.last_pub_data)
 
     async def websocket_handling_logic(self, websocket):
+        
         try:
             while True:
-                seq += 1
+                self.seq += 1
                 message = await websocket.recv()
                 data_dict = json.loads(message)
                 data_ros = RobotState()
                 data_ros.name = data_dict['robot_name']
                 data_ros.model = data_dict['fleet_name']
                 
-                data_ros.seq = seq 
+                data_ros.seq = self.seq 
                 x, y = self.find_map_in_rmf(float(data_dict['pose']['position']['x']), float(data_dict['pose']['position']['y']), origin_x=self.original_x, origin_y=self.original_y, height=self.height)
                 data_ros.battery_percent = 100.0 #float(data_dict['battery'])
                 data_ros.location.x = x
