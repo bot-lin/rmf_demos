@@ -96,9 +96,9 @@ class RobotModel:
                 "fleet_name": self.fleet_name
             }
             http_response = requests.post('http://{}:1234/set_fleet_name'.format(self.ip), json=post_data, timeout=1)
-            self.get_logger().info(http_response.text)
+            self.node.get_logger().info(http_response.text)
         except:
-            self.get_logger().info("Failed to set fleet name")
+            self.node.get_logger().info("Failed to set fleet name")
             self.connected = False
 
     def confirm_robot_state(self, data_dict):
