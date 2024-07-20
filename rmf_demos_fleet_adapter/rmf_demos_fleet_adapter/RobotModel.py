@@ -21,10 +21,23 @@ class RobotModel:
         self.waiting_for_zone = False
         self.zone_manager = node.zone_manager 
         self.robot_state_publisher_ = self.node.create_publisher(RobotState, 'robot_state', 10)
-        self.last_pub_data = None
+        self.last_pub_data = self.init_ros_data()
         self.get_map_info()
         
-        
+    def init_ros_data(self):
+        data = RobotState()
+        data.name = self.robot_name
+        data.model = self.fleet_name
+        data.battery_percent = 0.0
+        data.location.x = 0.0
+        data.location.y = 0.0
+        data.location.yaw = 0.0
+        data.location.level_name = 'L1'
+        data.mode.mode = 2
+        data.location.t = self.node.get_clock().now().to_msg()
+        data.path = []
+        data.task_id = ''
+        return data
     
     def __str__(self):
         return f'RobotModel: {self.__dict__}'
