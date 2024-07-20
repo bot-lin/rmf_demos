@@ -132,9 +132,9 @@ def broadcast_states():
             tasks = dispatcher_client.get_task_status()
             robots = dispatcher_client.get_robot_states()
             ros_time = dispatcher_client.ros_time()
-            socketio.emit('task_status', tasks, broadcast=True, namespace=ns)
-            socketio.emit('robot_states', robots, broadcast=True, namespace=ns)
-            socketio.emit('ros_time', ros_time, broadcast=True, namespace=ns)
+            socketio.emit('task_status', tasks, namespace=ns)
+            socketio.emit('robot_states', robots,  namespace=ns)
+            socketio.emit('ros_time', ros_time,  namespace=ns)
             logging.debug(f" ROS Time: {ros_time} | "
                           " tasks: "
                           f"{len(dispatcher_client.task_states_cache)}"
