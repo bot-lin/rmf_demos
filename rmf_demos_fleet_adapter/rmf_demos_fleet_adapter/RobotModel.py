@@ -22,7 +22,7 @@ class RobotModel:
         self.zone_manager = node.zone_manager 
         self.robot_state_publisher_ = self.node.create_publisher(RobotState, 'robot_state', 10)
         self.last_pub_data = self.init_ros_data()
-        self.get_map_info()
+        
         
     def init_ros_data(self):
         data = RobotState()
@@ -79,13 +79,14 @@ class RobotModel:
 
     def get_map_info(self):
         try:
-            http_response = requests.get('http://{}:1234/get_map_info'.format(self.ip))
+            http_response = requests.get('http://{}:1234/get_map_info'.format(self.ip), timeout=1)
             map_info = json.loads(http_response.text)['data']
             self.original_x = map_info['origin']['position']['x']
             self.original_y = map_info['origin']['position']['y']
             self.height = map_info['height']
             self.connected = True
         except:
+            self.node.get_logger().info("Failed to get map info")
             self.connected = False
 
     def set_robot_fleet_name(self):
@@ -94,9 +95,10 @@ class RobotModel:
                 "robot_name": self.robot_name,
                 "fleet_name": self.fleet_name
             }
-            http_response = requests.post('http://{}:1234/set_fleet_name'.format(self.ip), json=post_data)
+            http_response = requests.post('http://{}:1234/set_fleet_name'.format(self.ip), json=post_data, timeout=1)
             self.get_logger().info(http_response.text)
         except:
+            self.get_logger().info("Failed to set fleet name")
             self.connected = False
 
     def confirm_robot_state(self, data_dict):
@@ -244,8 +246,8 @@ class RobotModel:
     async def start(self, uri):
         self.seq = 0
         while True:
+            self.get_map_info()
             self.set_robot_fleet_name()
-
             try:
                 async with websockets.connect(uri, ping_timeout=30) as websocket:
                     await self.websocket_handling_logic(websocket)
