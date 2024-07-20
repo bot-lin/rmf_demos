@@ -246,17 +246,21 @@ class RobotModel:
     async def start(self, uri):
         self.seq = 0
         while True:
-            self.get_map_info()
-            self.set_robot_fleet_name()
-            try:
-                async with websockets.connect(uri, ping_timeout=2) as websocket:
-                    await self.websocket_handling_logic(websocket)
-            except (websockets.exceptions.ConnectionClosedError, asyncio.exceptions.CancelledError) as e:
-                self.node.get_logger().info(f"WebSocket connection closed: {e}. Retrying in 5 seconds...")
-                await asyncio.sleep(5)
-            except Exception as e:
-                self.node.get_logger().info(f"Unexpected error: {e}. Retrying in 5 seconds...")
-                await asyncio.sleep(5)
+            
+            if self.connected:
+                try:
+                    async with websockets.connect(uri, ping_timeout=2) as websocket:
+                        await self.websocket_handling_logic(websocket)
+                except (websockets.exceptions.ConnectionClosedError, asyncio.exceptions.CancelledError) as e:
+                    self.node.get_logger().info(f"WebSocket connection closed: {e}. Retrying in 5 seconds...")
+                    await asyncio.sleep(5)
+                except Exception as e:
+                    self.node.get_logger().info(f"Unexpected error: {e}. Retrying in 5 seconds...")
+                    await asyncio.sleep(5)
+            else:
+                self.get_map_info()
+                self.set_robot_fleet_name()
+
             if self.last_pub_data is not None:
                 self.robot_state_publisher_.publish(self.last_pub_data)
 
