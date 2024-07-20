@@ -249,7 +249,7 @@ class RobotModel:
             self.get_map_info()
             self.set_robot_fleet_name()
             try:
-                async with websockets.connect(uri, ping_timeout=30) as websocket:
+                async with websockets.connect(uri, ping_timeout=2) as websocket:
                     await self.websocket_handling_logic(websocket)
             except (websockets.exceptions.ConnectionClosedError, asyncio.exceptions.CancelledError) as e:
                 self.node.get_logger().info(f"WebSocket connection closed: {e}. Retrying in 5 seconds...")
