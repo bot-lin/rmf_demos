@@ -137,11 +137,15 @@ class RobotModel:
         target_x = self.path_remaining[0][0].x
         target_y = self.path_remaining[0][0].y
         target_yaw = self.path_remaining[0][0].yaw
+        precision_xy = 0.1
+        precision_yaw = 6.05
         if self.path_remaining[0][0].is_reverse:
             target_yaw += math.pi
             if target_yaw > math.pi:
                 target_yaw -= 2 * math.pi
         if self.path_remaining[0][0].level_name == "go_to":
+            precision_xy = 0.05
+            precision_yaw = 0.05
             map_x, map_y = target_x, target_y
             self.path_remaining[0][0].x, self.path_remaining[0][0].y = self.find_map_in_rmf(target_x, target_y, origin_x=self.original_x, origin_y=self.original_y, height=self.height)
         else:
@@ -164,8 +168,8 @@ class RobotModel:
                 }
             },
             "use_pyr": True,
-            "precision_xy": 0.05,
-            "precision_yaw": 0.05,
+            "precision_xy": precision_xy,
+            "precision_yaw": precision_yaw,
             "is_reverse": self.path_remaining[0][0].is_reverse,
             "nav_type": "auto",
             "task_id": str(self.task_id),
