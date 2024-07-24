@@ -22,16 +22,20 @@ class RobotModel:
         self.zone_manager = node.zone_manager 
         self.robot_state_publisher_ = self.node.create_publisher(RobotState, 'robot_state', 10)
         self.last_pub_data = self.init_ros_data()
+        self.node.create_timer(0.1, self.timer_callback)
         
-        
+    
+    def timer_callback(self):
+        self.robot_state_publisher_.publish(self.last_pub_data)
+
     def init_ros_data(self):
         data = RobotState()
         data.name = self.robot_name
         data.model = self.fleet_name
         data.battery_percent = 0.0
-        data.location.x = 0.0
-        data.location.y = 0.0
-        data.location.yaw = 0.0
+        data.location.x = 91.0
+        data.location.y = -44.0
+        data.location.yaw = 0.1
         data.location.level_name = 'L1'
         data.mode.mode = 2
         data.location.t = self.node.get_clock().now().to_msg()
@@ -86,7 +90,7 @@ class RobotModel:
             self.height = map_info['height']
             self.connected = True
         except:
-            self.node.get_logger().info("Failed to get map info")
+            self.node.get_logger().info("{}: Failed to get map info".format(self.robot_name))
             self.connected = False
 
     def set_robot_fleet_name(self):
@@ -98,7 +102,7 @@ class RobotModel:
             http_response = requests.post('http://{}:1234/set_fleet_name'.format(self.ip), json=post_data, timeout=1)
             self.node.get_logger().info(http_response.text)
         except:
-            self.node.get_logger().info("Failed to set fleet name")
+            self.node.get_logger().info("{}: Failed to set fleet name".format(self.robot_name))
             self.connected = False
 
     def confirm_robot_state(self, data_dict):
@@ -250,7 +254,6 @@ class RobotModel:
     async def start(self, uri):
         self.seq = 0
         while True:
-            
             if self.connected:
                 try:
                     async with websockets.connect(uri, ping_timeout=2) as websocket:
@@ -265,8 +268,9 @@ class RobotModel:
                 self.get_map_info()
                 self.set_robot_fleet_name()
 
-            if self.last_pub_data is not None:
-                self.robot_state_publisher_.publish(self.last_pub_data)
+            
+            # if self.last_pub_data is not None:
+            #     self.robot_state_publisher_.publish(self.last_pub_data)
 
     async def websocket_handling_logic(self, websocket):
         
@@ -290,7 +294,7 @@ class RobotModel:
         
                 data_ros.location.t = self.node.get_clock().now().to_msg()
                 if self.close_enough_to_goal(x, y) or data_dict['fsm'] in ['succeeded', 'canceled', 'failed']:
-                    if len(self.path_remaining) > 0:
+                    if len(self.path_remaining) > 0 and (not self.waiting_for_zone):
                         tmp = self.path_remaining.pop(0)
                     self.confirm_robot_state(data_dict)
                     
@@ -298,7 +302,7 @@ class RobotModel:
                 data_ros.path = [path for path, length in self.path_remaining]
                 data_ros.task_id = self.task_id
             
-                self.robot_state_publisher_.publish(data_ros)
+                # self.robot_state_publisher_.publish(data_ros)
                 self.last_pub_data = data_ros
                 if len(self.path_remaining) > 0  and (self.last_post_path != self.path_remaining[0][0]):
                     with self.path_remaining_lock:
