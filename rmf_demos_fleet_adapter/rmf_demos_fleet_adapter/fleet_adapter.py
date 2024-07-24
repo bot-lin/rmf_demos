@@ -130,7 +130,7 @@ def main(argv=sys.argv):
         'http://' + fleet_mgr_yaml['ip'] + ':' + str(fleet_mgr_yaml['port'])
     )
     api = RobotAPI(
-        api_prefix, fleet_mgr_yaml['user'], fleet_mgr_yaml['password']
+        api_prefix, fleet_mgr_yaml['user'], fleet_mgr_yaml['password'],node=node
     )
 
     robots = {}
@@ -343,7 +343,7 @@ class RobotAdapter:
                 return True
 
     def perform_nest_action(self, action_id):
-        match self.api.start_activity(self.name, self.cmd_id, 'nest_action', action_id):
+        match self.api.start_activity(self.name, self.cmd_id, 'nest_action', str(action_id)):
             case (RobotAPIResult.SUCCESS, path):
                 self.node.get_logger().info(
                     f'Commanding [{self.name}] to perform nest action [{action_id}]'
