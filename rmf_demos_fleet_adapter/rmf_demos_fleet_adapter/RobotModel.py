@@ -22,6 +22,7 @@ class RobotModel:
         self.zone_manager = node.zone_manager 
         self.robot_state_publisher_ = self.node.create_publisher(RobotState, 'robot_state', 10)
         self.last_pub_data = self.init_ros_data()
+        self.last_pose_time = self.node.get_clock().now()
         self.node.create_timer(0.1, self.timer_callback)
         
     
@@ -304,9 +305,11 @@ class RobotModel:
             
                 # self.robot_state_publisher_.publish(data_ros)
                 self.last_pub_data = data_ros
-                if len(self.path_remaining) > 0  and (self.last_post_path != self.path_remaining[0][0]):
+                current_time = self.node.get_clock().now()
+                if len(self.path_remaining) > 0  and (self.last_post_path != self.path_remaining[0][0] or (current_time - self.last_pose_time).nanoseconds / 1e9 > 30.0):
                     with self.path_remaining_lock:
                         self.post_dest_to_robot()
+                        self.last_pose_time = self.node.get_clock().now()
                     # Handle the message received
                     self.node.get_logger().info(message)
         except asyncio.CancelledError:
