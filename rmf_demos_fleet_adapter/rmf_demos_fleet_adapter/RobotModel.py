@@ -27,6 +27,7 @@ class RobotModel:
         
     
     def timer_callback(self):
+        self.last_pub_data.location.t = self.node.get_clock().now().to_msg()
         self.robot_state_publisher_.publish(self.last_pub_data)
 
     def init_ros_data(self):
