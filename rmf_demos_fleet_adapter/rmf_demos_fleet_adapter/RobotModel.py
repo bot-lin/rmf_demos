@@ -153,6 +153,7 @@ class RobotModel:
             precision_xy = 0.05
             precision_yaw = 0.05
             map_x, map_y = target_x, target_y
+            self.path_remaining[0][0].level_name = "L1"
             self.path_remaining[0][0].x, self.path_remaining[0][0].y = self.find_map_in_rmf(target_x, target_y, origin_x=self.original_x, origin_y=self.original_y, height=self.height)
         else:
             map_x, map_y = self.find_map_in_ros(target_x, target_y, origin_x=self.original_x, origin_y=self.original_y, height=self.height)
