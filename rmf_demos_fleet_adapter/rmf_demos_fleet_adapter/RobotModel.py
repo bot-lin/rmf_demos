@@ -24,7 +24,14 @@ class RobotModel:
         self.last_pub_data = self.init_ros_data()
         self.last_pose_time = self.node.get_clock().now()
         self.node.create_timer(0.1, self.timer_callback)
+        self.node.create_timer(1.0, self.post_dest_to_robot_callback)
         
+    def post_dest_to_robot_callback(self):
+        current_time = self.node.get_clock().now()
+        if len(self.path_remaining) > 0  and (self.last_post_path != self.path_remaining[0][0] or (current_time - self.last_pose_time).nanoseconds / 1e9 > 30.0):
+            with self.path_remaining_lock:
+                self.post_dest_to_robot()
+                self.last_pose_time = self.node.get_clock().now()
     
     def timer_callback(self):
         self.last_pub_data.location.t = self.node.get_clock().now().to_msg()
@@ -193,6 +200,7 @@ class RobotModel:
         #     self.zone_manager.add_vehicle_to_zone([self.path_remaining[0].x, self.path_remaining[0].y], zone_name)
 
         self.waiting_for_zone = False
+        self.node.get_logger().info("Robot: {} ".format(self.robot_name) + "Posting destination to robot: {} ".format(post_data))
         http_response = requests.post('http://{}:1234/go_to_simple'.format(self.ip), json=post_data)
         print_string = "Robot: {} ".format(self.robot_name) + "Go to simple response: {} ".format(http_response.text) + "map_x: {}, map_y: {} ".format(map_x, map_y) + "target_x: {}, target_y: {}".format(target_x, target_y)
         self.node.get_logger().info(print_string)
@@ -237,6 +245,7 @@ class RobotModel:
             elif threshold < 0.2:
                 threshold = 0.2
             if distance < threshold:
+                self.node.get_logger().info("Robot: {} ".format(self.robot_name) + "Close enough to goal ({}, {}) with distance: {}".format(x2, y2, distance))
                 return True
         return False
     
@@ -262,10 +271,10 @@ class RobotModel:
                     async with websockets.connect(uri, ping_timeout=2) as websocket:
                         await self.websocket_handling_logic(websocket)
                 except (websockets.exceptions.ConnectionClosedError, asyncio.exceptions.CancelledError) as e:
-                    self.node.get_logger().info(f"WebSocket connection closed: {e}. Retrying in 5 seconds...")
+                    self.node.get_logger().info(f"{self.robot_name} WebSocket connection closed: {e}. Retrying in 5 seconds...")
                     await asyncio.sleep(5)
                 except Exception as e:
-                    self.node.get_logger().info(f"Unexpected error: {e}. Retrying in 5 seconds...")
+                    self.node.get_logger().info(f"{self.robot_name} Unexpected error: {e}. Retrying in 5 seconds...")
                     await asyncio.sleep(5)
             else:
                 self.get_map_info()
@@ -291,6 +300,8 @@ class RobotModel:
                 data_ros.battery_percent = 100.0 #float(data_dict['battery'])
                 data_ros.location.x = x
                 data_ros.location.y = y
+                data_ros.location.map_x = float(data_dict['pose']['position']['x'])
+                data_ros.location.map_y = float(data_dict['pose']['position']['y'])
                 data_ros.location.yaw = float(data_dict['pose']['pyr']['yaw'])
                 data_ros.location.level_name = 'L1'
                 data_ros.mode.mode = self.check_robot_mode(data_dict)
@@ -307,13 +318,7 @@ class RobotModel:
             
                 # self.robot_state_publisher_.publish(data_ros)
                 self.last_pub_data = data_ros
-                current_time = self.node.get_clock().now()
-                if len(self.path_remaining) > 0  and (self.last_post_path != self.path_remaining[0][0] or (current_time - self.last_pose_time).nanoseconds / 1e9 > 30.0):
-                    with self.path_remaining_lock:
-                        self.post_dest_to_robot()
-                        self.last_pose_time = self.node.get_clock().now()
-                    # Handle the message received
-                    self.node.get_logger().info(message)
+                
         except asyncio.CancelledError:
             self.node.get_logger().info("WebSocket handling task was cancelled")
 
