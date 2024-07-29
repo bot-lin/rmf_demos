@@ -19,6 +19,8 @@ class RobotModel:
         self.ip = ip
         self.node = node   
         self.waiting_for_zone = False
+        self.resending_path = False
+        self.robot_status = 'idle'
         self.zone_manager = node.zone_manager 
         self.robot_state_publisher_ = self.node.create_publisher(RobotState, 'robot_state', 10)
         self.last_pub_data = self.init_ros_data()
@@ -27,6 +29,10 @@ class RobotModel:
         self.node.create_timer(1.0, self.post_dest_to_robot_callback)
         
     def post_dest_to_robot_callback(self):
+        if self.close_enough_to_goal(self.last_pub_data.location.x, self.last_pub_data.location.y) or self.robot_status in ['succeeded', 'canceled', 'failed']:
+            if len(self.path_remaining) > 0 and (not self.waiting_for_zone) and (not self.resending_path):
+                tmp = self.path_remaining.pop(0)
+            self.confirm_robot_state(self.robot_status)
         current_time = self.node.get_clock().now()
         if len(self.path_remaining) > 0  and (self.last_post_path != self.path_remaining[0][0] or (current_time - self.last_pose_time).nanoseconds / 1e9 > 30.0):
             with self.path_remaining_lock:
@@ -88,8 +94,10 @@ class RobotModel:
         if json.loads(http_response.text)["code"] == 0:
             self.last_post_path = self.path_remaining[0][0]
             self.node.get_logger().info("Robot: {} ".format(self.robot_name) + "Start nest action: {} ".format(action_id))
+            self.resending_path = False
         else:
             self.node.get_logger().info("Robot: {} ".format(self.robot_name) + "Failed to start nest action: {} ".format(action_id))
+            self.resending_path = True
 
 
 
@@ -117,8 +125,8 @@ class RobotModel:
             self.node.get_logger().info("{}: Failed to set fleet name".format(self.robot_name))
             self.connected = False
 
-    def confirm_robot_state(self, data_dict):
-        if data_dict['fsm'] in ['succeeded', 'canceled', 'failed']:
+    def confirm_robot_state(self, robot_status):
+        if robot_status in ['succeeded', 'canceled', 'failed']:
             http_response = requests.get('http://{}:1234/confirm_status'.format(self.ip))
             self.node.get_logger().info(http_response.text)
     
@@ -207,8 +215,10 @@ class RobotModel:
             print_string = "Robot: {} ".format(self.robot_name) + "Go to simple response: {} ".format(http_response.text) + "map_x: {}, map_y: {} ".format(map_x, map_y) + "target_x: {}, target_y: {}".format(target_x, target_y)
             self.node.get_logger().info(print_string)
             self.last_post_path = self.path_remaining[0][0]
+            self.resending_path = False
         else:
             self.node.get_logger().info("Robot: {} ".format(self.robot_name) + "Failed to post destination to robot: {} ".format(http_response.text))
+            self.resending_path = True
 
 
     def update_zone(self, robot_name, target):
@@ -309,12 +319,13 @@ class RobotModel:
                 data_ros.location.yaw = float(data_dict['pose']['pyr']['yaw'])
                 data_ros.location.level_name = 'L1'
                 data_ros.mode.mode = self.check_robot_mode(data_dict)
+                self.robot_status = data_dict['fsm']
         
                 data_ros.location.t = self.node.get_clock().now().to_msg()
-                if self.close_enough_to_goal(x, y) or data_dict['fsm'] in ['succeeded', 'canceled', 'failed']:
-                    if len(self.path_remaining) > 0 and (not self.waiting_for_zone):
-                        tmp = self.path_remaining.pop(0)
-                    self.confirm_robot_state(data_dict)
+                # if self.close_enough_to_goal(x, y) or data_dict['fsm'] in ['succeeded', 'canceled', 'failed']:
+                #     if len(self.path_remaining) > 0 and (not self.waiting_for_zone) and (not self.resending_path):
+                #         tmp = self.path_remaining.pop(0)
+                #     self.confirm_robot_state(data_dict)
                     
                     # self.task_id = ''
                 data_ros.path = [path for path, length in self.path_remaining]

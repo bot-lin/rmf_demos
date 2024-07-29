@@ -1,15 +1,31 @@
 from typing import Any
 from shapely.geometry import Point, Polygon
-
+import math
 
 class FleetZone:
-    def __init__(self, points, max_vehicles=1):
-        self.zone = Polygon(points)
-        self.vehicles = []
+    def __init__(self, points=[], radius=1.0, max_vehicles=1, type="Polygon", vehicles=[]):
+        self.type = type
+        if type == "Polygon":
+            self.zone = Polygon(points)
+        elif type == "Circle":
+            self.center = (0.0, 0.0)
+            self.radius = radius
+        self.vehicles = vehicles
         self.max_vehicles = max_vehicles
     
     def check_point_in_zone(self, point):
-        return self.zone.contains(Point(point[0], point[1]))
+        if self.type == "Polygon":
+            return self.zone.contains(Point(point[0], point[1]))
+        elif self.type == "Circle":
+            return self.__is_point_in_circle(self.center, self.radius, point)
+        
+    def update_center(self, center):
+        self.center = center
+        
+    def __is_point_in_circle(self, center, radius, point):
+        distance = math.sqrt((center[0] - point[0]) ** 2 + (center[1] - point[1]) ** 2)
+        return distance <= radius
+
 
 
 class FleetZoneManager:
@@ -19,7 +35,10 @@ class FleetZoneManager:
         self.node.get_logger().info('Zone Config: {}'.format(zone_config))
         self.zones = {}
         for zone_name, zone in zone_config.items():
-            self.zones[zone_name] = FleetZone(zone['points'], max_vehicles=zone.get('max_vehicles', 1))
+            if zone.get('type') == 'Circle':
+                self.zones[zone_name] = FleetZone(radius=zone['radius'], max_vehicles=zone.get('max_vehicles', 1), type="Circle")
+            else:
+                self.zones[zone_name] = FleetZone(zone['points'], max_vehicles=zone.get('max_vehicles', 1), type="Polygon")
         self.print_zones()
 
     def is_point_in_zone(self, point):
