@@ -364,8 +364,8 @@ class FleetManager(Node):
             elif request.activity in ['go_to']:
                 desc = json.loads(request.label)
                 target_loc = Location()
-                target_loc.x = desc['position'][0]
-                target_loc.y = desc['position'][1]
+                target_loc.map_x = desc['position'][0]
+                target_loc.map_y = desc['position'][1]
                 target_loc.yaw = math.radians(desc['position'][2])
                 target_loc.is_reverse = desc['is_reverse']
                 target_loc.level_name = "go_to"

@@ -108,7 +108,7 @@ class DispatcherClient(Node):
         Cancel Task - This function will trigger a ros srv call to the
         dispatcher node, and return a response.
         """
-        print(f"Canceling Task Request! {task_id}")
+        self.get_logger().info(f"Canceling Task Request! {task_id}")
 
         # TODO: check res from "/task_api_responses"
         #   cancellation is not fully tested in "rmf_ros2"

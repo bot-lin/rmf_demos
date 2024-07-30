@@ -12,6 +12,7 @@ class RobotModel:
         self.path_remaining_lock = Lock() 
         self.last_post_path = None
         self.task_id = ''
+        self.action_type = ''
         self.connected = False
         self.pose = None
         self.fleet_name = fleet_name
@@ -128,7 +129,7 @@ class RobotModel:
     def confirm_robot_state(self, robot_status):
         if robot_status in ['succeeded', 'canceled', 'failed']:
             http_response = requests.get('http://{}:1234/confirm_status'.format(self.ip))
-            self.node.get_logger().info(http_response.text)
+            self.node.get_logger().info("Robot: {} ".format(self.robot_name) + "Confirm status response: {} ".format(http_response.text))
     
     def find_map_in_ros(self, given_x, given_y, resolution=0.05, origin_x=-24.5, origin_y=-28.9, height=896):
         x = given_x + origin_x
@@ -149,7 +150,8 @@ class RobotModel:
 
     def stop_robot(self):
         http_response = requests.get('http://{}:1234/stop_robot'.format(self.ip))
-        self.node.get_logger().info(http_response.text)
+        self.node.get_logger().info("Robot: {} ".format(self.robot_name) + "Stop robot response: {} ".format(http_response.text))
+        self.path_remaining = []
 
     
     def post_dest_to_robot(self):
@@ -167,12 +169,14 @@ class RobotModel:
             if target_yaw > math.pi:
                 target_yaw -= 2 * math.pi
         if self.path_remaining[0][0].level_name == "go_to":
+            self.action_type = "go_to_xy"
             precision_xy = 0.05
             precision_yaw = 0.05
-            map_x, map_y = target_x, target_y
-            self.path_remaining[0][0].level_name = "L1"
-            self.path_remaining[0][0].x, self.path_remaining[0][0].y = self.find_map_in_rmf(target_x, target_y, origin_x=self.original_x, origin_y=self.original_y, height=self.height)
+            map_x, map_y = self.path_remaining[0][0].map_x, self.path_remaining[0][0].map_y
+            # self.path_remaining[0][0].level_name = "L1"
+            self.path_remaining[0][0].x, self.path_remaining[0][0].y = self.find_map_in_rmf(map_x, map_y, origin_x=self.original_x, origin_y=self.original_y, height=self.height)
         else:
+            self.action_type = "go_to_place"
             map_x, map_y = self.find_map_in_ros(target_x, target_y, origin_x=self.original_x, origin_y=self.original_y, height=self.height)
         
         post_data = {
@@ -258,6 +262,8 @@ class RobotModel:
                 threshold = 1.0
             elif threshold < 0.2:
                 threshold = 0.2
+            if self.action_type == "go_to_xy":
+                threshold = 0.1
             if distance < threshold:
                 self.node.get_logger().info("Robot: {} ".format(self.robot_name) + "Close enough to goal ({}, {}) with distance: {}".format(x2, y2, distance))
                 return True
