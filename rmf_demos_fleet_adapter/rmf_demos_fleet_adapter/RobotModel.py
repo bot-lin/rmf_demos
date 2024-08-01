@@ -13,6 +13,7 @@ class RobotModel:
         self.last_post_path = None
         self.task_id = ''
         self.action_type = ''
+        self.robot_message = ''
         self.connected = False
         self.pose = None
         self.fleet_name = fleet_name
@@ -24,6 +25,7 @@ class RobotModel:
         self.robot_status = 'idle'
         self.zone_manager = node.zone_manager 
         self.robot_state_publisher_ = self.node.create_publisher(RobotState, 'robot_state', 10)
+        self.robot_message_publisher_ = self.node.create_publisher(RobotState, 'robot_message', 10)
         self.last_pub_data = self.init_ros_data()
         self.last_pose_time = self.node.get_clock().now()
         self.node.create_timer(0.1, self.timer_callback)
@@ -35,7 +37,7 @@ class RobotModel:
                 tmp = self.path_remaining.pop(0)
             self.confirm_robot_state(self.robot_status)
         current_time = self.node.get_clock().now()
-        if len(self.path_remaining) > 0  and (self.last_post_path != self.path_remaining[0][0] or (current_time - self.last_pose_time).nanoseconds / 1e9 > 30.0):
+        if len(self.path_remaining) > 0  and (self.last_post_path != self.path_remaining[0][0] or (current_time - self.last_pose_time).nanoseconds / 1e9 > 60.0):
             with self.path_remaining_lock:
                 self.post_dest_to_robot()
                 self.last_pose_time = self.node.get_clock().now()
@@ -43,7 +45,19 @@ class RobotModel:
     def timer_callback(self):
         self.last_pub_data.location.t = self.node.get_clock().now().to_msg()
         self.robot_state_publisher_.publish(self.last_pub_data)
-
+        data = RobotState()
+        data.name = self.robot_name
+        data.model = self.fleet_name
+        data.task_id = self.robot_message
+        self.robot_message_publisher_.publish(data)
+        robot_x = round(self.last_pub_data.location.x, 2)
+        robot_y = round(self.last_pub_data.location.y, 2)
+        if self.last_post_path is not None:
+            target_x = round(self.last_post_path.x, 2)
+            target_y = round(self.last_post_path.y, 2)
+            self.zone_manager.update_zone_polygon(self.robot_name, [robot_x, robot_y], [target_x, target_y])
+        else:
+            self.zone_manager.update_zone_polygon(self.robot_name, [robot_x, robot_y])
     def init_ros_data(self):
         data = RobotState()
         data.name = self.robot_name
@@ -90,6 +104,7 @@ class RobotModel:
         return ((start.x - end.x)**2 + (start.y - end.y)**2)**0.5
     
     def start_nest_action(self, action_id, cmd_id):
+        self.robot_message = "executing nest action: {}".format(action_id) 
         self.node.get_logger().info("Robot: {} ".format(self.robot_name) + "Sending nest action: {} ".format(action_id))
         http_response = requests.get('http://{}:5000/deploy/executeAction/{}/{}'.format(self.ip, action_id, cmd_id))
         if json.loads(http_response.text)["code"] == 0:
@@ -151,6 +166,7 @@ class RobotModel:
     def stop_robot(self):
         http_response = requests.get('http://{}:1234/stop_robot'.format(self.ip))
         self.node.get_logger().info("Robot: {} ".format(self.robot_name) + "Stop robot response: {} ".format(http_response.text))
+        self.robot_message = "Robot stopped"
         self.path_remaining = []
 
     
@@ -205,13 +221,7 @@ class RobotModel:
         }
         if not self.update_zone(self.robot_name, [self.path_remaining[0][0].x, self.path_remaining[0][0].y]):
             return
-        # is_in_zone, zone_name = self.zone_manager.is_point_in_zone([self.path_remaining[0].x, self.path_remaining[0].y])
-        # if is_in_zone:
-        #     while not self.zone_manager.allowed_to_enter_zone([self.path_remaining[0].x, self.path_remaining[0].y]):
-        #         self.node.get_logger().info("Robot: {} ".format(self.robot_name) + "Waiting to enter zone")
-        #         time.sleep(1)
-        #     self.zone_manager.add_vehicle_to_zone([self.path_remaining[0].x, self.path_remaining[0].y], zone_name)
-
+ 
         self.waiting_for_zone = False
         self.node.get_logger().info("Robot: {} ".format(self.robot_name) + "Posting destination to robot: {} ".format(post_data))
         http_response = requests.post('http://{}:1234/go_to_simple'.format(self.ip), json=post_data)
@@ -220,8 +230,10 @@ class RobotModel:
             self.node.get_logger().info(print_string)
             self.last_post_path = self.path_remaining[0][0]
             self.resending_path = False
+            self.robot_message = "Going to ({}, {})".format(map_x, map_y)
         else:
             self.node.get_logger().info("Robot: {} ".format(self.robot_name) + "Failed to post destination to robot: {} ".format(http_response.text))
+            self.robot_message = "Failed to post go to ({}, {})".format(map_x, map_y)
             self.resending_path = True
 
 
@@ -291,9 +303,11 @@ class RobotModel:
                     async with websockets.connect(uri, ping_timeout=2) as websocket:
                         await self.websocket_handling_logic(websocket)
                 except (websockets.exceptions.ConnectionClosedError, asyncio.exceptions.CancelledError) as e:
+                    self.connected = False
                     self.node.get_logger().info(f"{self.robot_name} WebSocket connection closed: {e}. Retrying in 5 seconds...")
                     await asyncio.sleep(5)
                 except Exception as e:
+                    self.connected = False
                     self.node.get_logger().info(f"{self.robot_name} Unexpected error: {e}. Retrying in 5 seconds...")
                     await asyncio.sleep(5)
             else:

@@ -32,7 +32,7 @@ from rclpy.qos import QoSReliabilityPolicy as Reliability
 
 from rmf_task_msgs.msg import ApiRequest, ApiResponse
 from rmf_building_map_msgs.srv import GetBuildingMap
-from rmf_fleet_msgs.msg import FleetState, RobotMode
+from rmf_fleet_msgs.msg import FleetState, RobotMode, RobotState
 
 ###############################################################################
 
@@ -55,7 +55,11 @@ class DispatcherClient(Node):
         self.fleet_state_subscription = self.create_subscription(
             FleetState, 'fleet_states', self.fleet_state_cb,
             qos_profile=QoSProfile(depth=20))
+        self.robot_message_subscription = self.create_subscription(
+            RobotState, "robot_message", self.robot_message_cb,
+            qos_profile=QoSProfile(depth=20))
         self.fleet_states_dict = {}
+        self.robot_message_dict = {}
 
         # TODO remove this
         sim_time_bool = Parameter('use_sim_time', Parameter.Type.BOOL, True)
@@ -66,6 +70,10 @@ class DispatcherClient(Node):
     def fleet_state_cb(self, msg: FleetState):
         fleet_name = msg.name
         self.fleet_states_dict[fleet_name] = msg.robots
+    
+    def robot_message_cb(self, msg: RobotState):
+        robot_name = msg.name
+        self.robot_message_dict[robot_name] = msg.task_id
 
     def spin_once(self):
         rclpy.spin_once(self, timeout_sec=0.1)
@@ -262,7 +270,13 @@ class DispatcherClient(Node):
                 assigned_tasks.append(state['state'])
         assigned_tasks.sort(key=lambda x: x.get('start_time'))
         for task in assigned_tasks:
-            assigned_task_ids.append(task["task_id"])
+            data = {
+                "task_id": task["task_id"],
+                "task_type": task["task_type"],
+                "state": task["state"],
+                "done": task["done"],
+            }
+            assigned_task_ids.append(data)
         return assigned_task_ids
 
     def __convert_robot_states_msg(self, fleet_name, robot_states):
@@ -289,9 +303,12 @@ class DispatcherClient(Node):
             state["battery_percent"] = bot.battery_percent
             state["location_x"] = bot.location.x
             state["location_y"] = bot.location.y
+            state['map_x'] = bot.location.map_x
+            state['map_y'] = bot.location.map_y
             state["location_yaw"] = bot.location.yaw
             state["level_name"] = bot.location.level_name
             state["assignments"] = self.__get_robot_assignment(bot.name)
+            state["message"] = self.robot_message_dict.get(bot.name, "")
             bots.append(state)
         return bots
 
