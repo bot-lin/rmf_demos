@@ -42,12 +42,13 @@ class RobotAPI:
     # The constructor below accepts parameters typically required to submit
     # http requests. Users should modify the constructor as per the
     # requirements of their robot's API
-    def __init__(self, prefix: str, user: str, password: str):
+    def __init__(self, prefix: str, user: str, password: str, node):
         self.prefix = prefix
         self.user = user
         self.password = password
         self.timeout = 5.0
         self.debug = False
+        self.node = node
 
     def check_connection(self):
         """Return True if connection to the robot API server is successful."""
@@ -86,18 +87,18 @@ class RobotAPI:
             response = requests.post(url, timeout=self.timeout, json=data)
             response.raise_for_status()
             if self.debug:
-                print(f'Response: {response.json()}')
+                self.node.get_logger().info(f'Response: {response.json()}')
             return response.json()['success']
         except HTTPError as http_err:
-            print(f'HTTP error for {robot_name} in navigate: {http_err}')
+            self.node.get_logger().error(f'HTTP error for {robot_name} in navigate: {http_err}')
         except Exception as err:
-            print(f'Other error for {robot_name} in navigate: {err}')
+            self.node.get_logger().error(f'Other error for {robot_name} in navigate: {err}')
         return False
 
     def start_activity(
         self, robot_name: str, cmd_id: int, activity: str, label: str
     ):
-        """
+        """ 
         Request the robot to begin a process.
 
         This is specific to the robot and the use case.
@@ -114,8 +115,7 @@ class RobotAPI:
         try:
             response = requests.post(url, timeout=self.timeout, json=data)
             response.raise_for_status()
-            if self.debug:
-                print(f'Response: {response.json()}')
+            self.node.get_logger().info(f'Response: {response.json()}')
 
             if response.json()['success']:
                 return (
@@ -126,9 +126,9 @@ class RobotAPI:
             # If we get a response with success=False, then
             return RobotAPIResult.IMPOSSIBLE
         except HTTPError as http_err:
-            print(f'HTTP error for {robot_name} in start_activity: {http_err}')
+            self.node.get_logger().error(f'HTTP error for {robot_name} in start_activity: {http_err}')
         except Exception as err:
-            print(f'Other error {robot_name} in start_activity: {err}')
+            self.node.get_logger().error(f'Other error {robot_name} in start_activity: {err}')
         return RobotAPIResult.RETRY
 
     def stop(self, robot_name: str, cmd_id: int):
@@ -146,12 +146,12 @@ class RobotAPI:
             response = requests.get(url, self.timeout)
             response.raise_for_status()
             if self.debug:
-                print(f'Response: {response.json()}')
+                self.node.get_logger().info(f'Response: {response.json()}')
             return response.json()['success']
         except HTTPError as http_err:
-            print(f'HTTP error for {robot_name} in stop: {http_err}')
+            self.node.get_logger().error(f'HTTP error for {robot_name} in stop: {http_err}')
         except Exception as err:
-            print(f'Other error for {robot_name} in stop: {err}')
+            self.node.get_logger().error(f'Other error for {robot_name} in stop: {err}')
         return False
     
 
@@ -195,7 +195,7 @@ class RobotAPI:
             response = requests.get(url, timeout=self.timeout)
             response.raise_for_status()
             if self.debug:
-                print(f'Response: {response.json()}')
+                self.node.get_logger().error(f'Response: {response.json()}')
             if robot_name is not None:
                 return RobotUpdateData(response.json()['data'])
             else:
@@ -204,9 +204,9 @@ class RobotAPI:
                     all_robots.append(RobotUpdateData(robot))
                 return all_robots
         except HTTPError as http_err:
-            print(f'HTTP error for {robot_name} in get_data: {http_err}')
+            self.node.get_logger().error(f'HTTP error for {robot_name} in get_data: {http_err}')
         except Exception as err:
-            print(f'Other error for {robot_name} in get_data: {err}')
+            self.node.get_logger().error(f'Other error for {robot_name} in get_data: {err}')
         return None
 
 
