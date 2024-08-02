@@ -58,7 +58,7 @@ class RobotModel:
             self.zone_manager.update_zone_polygon(self.robot_name, [robot_x, robot_y], [target_x, target_y])
         else:
             self.zone_manager.update_zone_polygon(self.robot_name, [robot_x, robot_y])
-        # self.zone_manager.pub_zones()
+        self.zone_manager.pub_zones()
         # self.zone_manager.draw_zones()
     def init_ros_data(self):
         data = RobotState()

@@ -25,6 +25,14 @@
     <param name="use_sim_time" value="$(var use_sim_time)"/>
   </node>
 
+      <node pkg="rmf_demos_fleet_adapter"
+        exec="plt_show"
+        args="--config_file $(var config_file)"
+        output="both">
+
+    <param name="use_sim_time" value="$(var use_sim_time)"/>
+  </node>
+
 
   <!-- Fleet adapter -->
   <group>

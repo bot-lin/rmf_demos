@@ -152,23 +152,7 @@ class FleetZoneManager:
     
     def pub_zones(self):
         msg = String()
-        msg.data = json.dumps({zone_name: str(zone) for zone_name, zone in self.zones.items()})
+        msg.data = json.dumps({zone_name: str(zone.zone) for zone_name, zone in self.zones.items()})
         self.zone_publiser.publish(msg)
     
-    def draw_zones(self, filename="/data/polygons.png"):
-        plt.figure()
-        
-        for name, zone in self.zones.items():
-            x, y = zone.zone.exterior.xy
-            plt.plot(x, y, label=name)
-        plt.xlabel('X')
-        plt.ylabel('Y')
-        plt.legend()
-        plt.title('Polygons')
-        plt.grid(True)
-        plt.axis('equal')
-        plt.savefig(filename)
-        plt.close()
-
-
-        
+   
