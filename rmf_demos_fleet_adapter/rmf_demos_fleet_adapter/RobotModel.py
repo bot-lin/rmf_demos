@@ -336,8 +336,8 @@ class RobotModel:
                 data_ros.battery_percent = 100.0 #float(data_dict['battery'])
                 data_ros.location.x = x
                 data_ros.location.y = y
-                data_ros.location.map_x = float(data_dict['pose']['position']['x'])
-                data_ros.location.map_y = float(data_dict['pose']['position']['y'])
+                # data_ros.location.map_x = float(data_dict['pose']['position']['x'])
+                # data_ros.location.map_y = float(data_dict['pose']['position']['y'])
                 data_ros.location.yaw = float(data_dict['pose']['pyr']['yaw'])
                 data_ros.location.level_name = 'L1'
                 data_ros.mode.mode = self.check_robot_mode(data_dict)
