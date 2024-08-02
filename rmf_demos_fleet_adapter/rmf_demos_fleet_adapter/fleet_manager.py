@@ -44,7 +44,6 @@ from rmf_fleet_msgs.msg import Location
 from rmf_fleet_msgs.msg import PathRequest
 from rmf_fleet_msgs.msg import RobotMode
 from rmf_fleet_msgs.msg import RobotState
-from std_msgs.msg import String
 from rmf_demos_fleet_adapter.fleet_zone import FleetZoneManager
 
 import socketio

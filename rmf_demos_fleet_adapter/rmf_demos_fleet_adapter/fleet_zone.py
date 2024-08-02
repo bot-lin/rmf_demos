@@ -1,7 +1,10 @@
 from typing import Any
 from shapely.geometry import Point, Polygon
-import math
+from std_msgs.msg import String
+# import matplotlib.pyplot as plt
 
+import math
+import json
 class FleetZone:
     def __init__(self, points=[], radius=1.0, max_vehicles=1, type="Polygon", vehicles=[]):
         self.type = type
@@ -96,6 +99,7 @@ class FleetZoneManager:
         self.node = node_handler
         self.node.get_logger().info('Initializing FleetZoneManager')
         self.node.get_logger().info('Zone Config: {}'.format(zone_config))
+        self.zone_publiser = self.node.create_publisher(String, '/fleet_adapter/zones', 10)
         self.zones = {}
         for zone_name, zone in zone_config.items():
             if zone.get('type') == 'Circle':
@@ -145,4 +149,26 @@ class FleetZoneManager:
         for zone_name, zone in self.zones.items():
             self.node.get_logger().info('Zone: {}'.format(zone_name))
             self.node.get_logger().info('{}'.format(zone))
-  
+    
+    def pub_zones(self):
+        msg = String()
+        msg.data = json.dumps({zone_name: str(zone) for zone_name, zone in self.zones.items()})
+        self.zone_publiser.publish(msg)
+    
+    def draw_zones(self, filename="/data/polygons.png"):
+        plt.figure()
+        
+        for name, zone in self.zones.items():
+            x, y = zone.zone.exterior.xy
+            plt.plot(x, y, label=name)
+        plt.xlabel('X')
+        plt.ylabel('Y')
+        plt.legend()
+        plt.title('Polygons')
+        plt.grid(True)
+        plt.axis('equal')
+        plt.savefig(filename)
+        plt.close()
+
+
+        

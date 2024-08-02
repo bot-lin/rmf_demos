@@ -58,6 +58,8 @@ class RobotModel:
             self.zone_manager.update_zone_polygon(self.robot_name, [robot_x, robot_y], [target_x, target_y])
         else:
             self.zone_manager.update_zone_polygon(self.robot_name, [robot_x, robot_y])
+        # self.zone_manager.pub_zones()
+        # self.zone_manager.draw_zones()
     def init_ros_data(self):
         data = RobotState()
         data.name = self.robot_name
@@ -272,8 +274,8 @@ class RobotModel:
             threshold = self.path_remaining[0][1] / 2
             if threshold > 1.0:
                 threshold = 1.0
-            elif threshold < 0.2:
-                threshold = 0.2
+            elif threshold < 0.4:
+                threshold = 0.4
             if self.action_type == "go_to_xy":
                 threshold = 0.1
             if distance < threshold:
