@@ -35,20 +35,17 @@ from rclpy.qos import QoSHistoryPolicy as History
 from rclpy.qos import QoSProfile
 from rclpy.qos import QoSReliabilityPolicy as Reliability
 import rmf_adapter as adpt
-from rclpy.executors import MultiThreadedExecutor
-
 import rmf_adapter.geometry as geometry
 import rmf_adapter.vehicletraits as traits
 from rmf_fleet_msgs.msg import DockSummary
 from rmf_fleet_msgs.msg import Location
+from rmf_fleet_msgs.msg import ModeRequest
 from rmf_fleet_msgs.msg import PathRequest
 from rmf_fleet_msgs.msg import RobotMode
 from rmf_fleet_msgs.msg import RobotState
-from std_msgs.msg import String
 import socketio
 import uvicorn
 import yaml
-import requests
 
 app = FastAPI()
 
@@ -61,7 +58,6 @@ class Request(BaseModel):
     data: Optional[dict] = None
     speed_limit: Optional[float] = None
     toggle: Optional[bool] = None
-    action_id: Optional[int] = None
 
 
 class Response(BaseModel):
@@ -80,7 +76,7 @@ class State:
         self.destination = destination
         self.last_path_request = None
         self.last_completed_request = None
-        self.mode_teleop = False
+        self.perform_action_mode = False
         self.svy_transformer = Transformer.from_crs('EPSG:4326', 'EPSG:3414')
         self.gps_pos = [0, 0]
 
@@ -100,11 +96,12 @@ class State:
 
 class FleetManager(Node):
 
-    def __init__(self, config, nav_path):
+    def __init__(self, config):
         self.debug = False
         self.config = config
         self.fleet_name = self.config['rmf_fleet']['name']
         mgr_config = self.config['fleet_manager']
+        self.ignore_speed_limit = mgr_config.get('ignore_speed_limit', False)
 
         self.gps = False
         self.offset = [0, 0]
@@ -188,12 +185,28 @@ class FleetManager(Node):
             qos_profile=transient_qos,
         )
 
+        publisher_qos = QoSProfile(
+            history=History.KEEP_LAST,
+            depth=10,
+            reliability=Reliability.RELIABLE,
+            durability=Durability.VOLATILE)
+
         self.path_pub = self.create_publisher(
             PathRequest,
             'robot_path_requests',
             qos_profile=qos_profile_system_default,
         )
 
+        self.mode_pub = self.create_publisher(
+            ModeRequest,
+            'robot_mode_requests',
+            qos_profile=publisher_qos)
+
+        self.action_completed_pub = self.create_publisher(
+            ModeRequest,
+            'action_execution_notice',
+            qos_profile=qos_profile_system_default,
+        )
 
         @app.get('/open-rmf/rmf_demos_fm/status/', response_model=Response)
         async def status(robot_name: Optional[str] = None):
@@ -211,20 +224,15 @@ class FleetManager(Node):
                 state = self.robots.get(robot_name)
                 if state is None or state.state is None:
                     return response
-                # self.get_logger().info("{} {} {}".format(state.state.location.x, state.state.location.y, state.state.location.yaw))
                 response['data'] = self.get_robot_state(state, robot_name)
-                # self.get_logger().info("{}".format(response['data']))
             response['success'] = True
-            # rclpy.spin_once(self, timeout_sec=0.1)
             return response
 
         @app.post('/open-rmf/rmf_demos_fm/navigate/', response_model=Response)
         async def navigate(robot_name: str, cmd_id: int, dest: Request):
-            self.get_logger().info(f'navigate: {robot_name}')
             response = {'success': False, 'msg': ''}
             if robot_name not in self.robots or len(dest.destination) < 1:
                 return response
-            
 
             robot = self.robots[robot_name]
 
@@ -233,6 +241,8 @@ class FleetManager(Node):
             target_yaw = dest.destination['yaw']
             target_map = dest.map_name
             target_speed_limit = dest.speed_limit
+            if self.ignore_speed_limit:
+                target_speed_limit = None
 
             target_x -= self.offset[0]
             target_y -= self.offset[1]
@@ -282,7 +292,6 @@ class FleetManager(Node):
 
         @app.get('/open-rmf/rmf_demos_fm/stop_robot/', response_model=Response)
         async def stop(robot_name: str, cmd_id: int):
-            self.get_logger().info(f'stop robot: {robot_name}')
             response = {'success': False, 'msg': ''}
             if robot_name not in self.robots:
                 return response
@@ -298,7 +307,6 @@ class FleetManager(Node):
             path_request.path.append(robot.state.location)
 
             path_request.task_id = str(cmd_id)
-            self.get_logger().info(f'stop robot: path_request.task_id: {path_request.task_id}')
             self.path_pub.publish(path_request)
 
             if self.debug:
@@ -313,7 +321,6 @@ class FleetManager(Node):
             '/open-rmf/rmf_demos_fm/action_paths/', response_model=Response
         )
         async def action_paths(activity: str, label: str):
-            self.get_logger().info(f'action paths: {activity} {label}')
             response = {'success': False, 'msg': ''}
             if activity not in self.action_paths:
                 return response
@@ -331,46 +338,37 @@ class FleetManager(Node):
         async def start_activity(
             robot_name: str, cmd_id: int, request: Request
         ):
-            self.get_logger().info(f'start activity: {robot_name}')
             response = {'success': False, 'msg': ''}
             if (
                 robot_name not in self.robots
-                
+                or request.activity not in self.action_paths
+                or request.label not in self.action_paths[request.activity]
             ):
                 return response
 
+            # Invalid request
+            if robot_name not in self.robots:
+                return response
             robot = self.robots[robot_name]
 
             path_request = PathRequest()
             cur_loc = robot.state.location
             target_loc = Location()
             path_request.path.append(cur_loc)
-            self.get_logger().info('--------------------------------------------')
-            self.get_logger().info(f'action paths: {request.activity} {request.label}')
 
-            if request.activity in ['nest_action']:
-                action_id = request.label
+            activity_path = self.action_paths[request.activity][request.label]
+            map_name = activity_path['map_name']
+            for wp in activity_path['path']:
                 target_loc = Location()
-                target_loc.x = cur_loc.x + 10.0
-                target_loc.y = cur_loc.y + 10.0
-                target_loc.level_name = "run_nest_action"
-                target_loc.index = int(action_id)
+                target_loc.x = wp[0]
+                target_loc.y = wp[1]
+                target_loc.yaw = wp[2]
+                target_loc.level_name = map_name
                 path_request.path.append(target_loc)
-            else:
-                activity_path = self.action_paths[request.activity][request.label]
-                map_name = activity_path['map_name']
-                for wp in activity_path['path']:
-                    target_loc = Location()
-                    target_loc.x = wp[0]
-                    target_loc.y = wp[1]
-                    target_loc.yaw = wp[2]
-                    target_loc.level_name = map_name
-                    path_request.path.append(target_loc)
 
             path_request.fleet_name = self.fleet_name
             path_request.robot_name = robot_name
             path_request.task_id = str(cmd_id)
-            self.get_logger().info(f'action paths: path_request.task_id: {path_request.task_id}')
             self.path_pub.publish(path_request)
 
             if self.debug:
@@ -383,34 +381,60 @@ class FleetManager(Node):
 
             response['success'] = True
             response['data'] = {}
-            try:
-                response['data']['path'] = activity_path
-            except:
-                response['data']['path'] = []
+            response['data']['path'] = activity_path
             return response
 
         @app.post(
             '/open-rmf/rmf_demos_fm/toggle_teleop/', response_model=Response
         )
         async def toggle_teleop(robot_name: str, mode: Request):
-            self.get_logger().info(f'toggle teleop: {robot_name}')
             response = {'success': False, 'msg': ''}
             if robot_name not in self.robots:
                 return response
             # Toggle action mode
-            self.robots[robot_name].mode_teleop = mode.toggle
+            self.robots[robot_name].perform_action_mode = mode.toggle
             response['success'] = True
             return response
-        
-    
+
+        @app.post(
+            '/open-rmf/rmf_demos_fm/toggle_attach/', response_model=Response
+        )
+        async def toggle_attach(robot_name: str, cmd_id: int, mode: Request):
+            response = {'success': False, 'msg': ''}
+            if robot_name not in self.robots:
+                return response
+            # Toggle action mode
+            if mode.toggle:
+                # Use robot mode publisher to set it to "attaching cart mode"
+                self.get_logger().info('Publishing attaching mode...')
+                msg = self._make_mode_request(robot_name, cmd_id,
+                                              RobotMode.MODE_PERFORMING_ACTION,
+                                              'attach_cart')
+            else:
+                # Use robot mode publisher to set it to "detaching cart mode"
+                self.get_logger().info('Publishing detaching mode...')
+                msg = self._make_mode_request(robot_name, cmd_id,
+                                              RobotMode.MODE_PERFORMING_ACTION,
+                                              'detach_cart')
+            self.mode_pub.publish(msg)
+            response['success'] = True
+            return response
+
+    def _make_mode_request(self, robot_name, cmd_id, mode, action=''):
+        mode_msg = ModeRequest()
+        mode_msg.fleet_name = self.fleet_name
+        mode_msg.robot_name = robot_name
+        mode_msg.mode.mode = mode
+        mode_msg.mode.mode_request_id = cmd_id
+        mode_msg.mode.performing_action = action
+        return mode_msg
 
     def robot_state_cb(self, msg):
-        
         if msg.name in self.robots:
             robot = self.robots[msg.name]
             if (
                 not robot.is_expected_task_id(msg.task_id)
-                and not robot.mode_teleop
+                and not robot.perform_action_mode
             ):
                 # This message is out of date, so disregard it.
                 if robot.last_path_request is not None:
@@ -422,23 +446,22 @@ class FleetManager(Node):
                             f'{robot.last_path_request.task_id}, '
                             f'because it is currently following {msg.task_id}'
                         )
-                    # self.path_pub.publish(robot.last_path_request)
+                    self.path_pub.publish(robot.last_path_request)
                 return
 
             robot.state = msg
-            # self.get_logger().info("callback: {}".format(robot.state.location.x))
-            
-            # Check if robot has reached destination
-            if robot.destination is None:
-                return
+            completed_request = None
 
             if (
                 msg.mode.mode == RobotMode.MODE_IDLE
                 or msg.mode.mode == RobotMode.MODE_CHARGING
-            ) and len(msg.path) == 0:
+            ) and len(msg.path) == 0 and msg.task_id and msg.task_id.isdigit():
                 robot = self.robots[msg.name]
                 robot.destination = None
                 completed_request = int(msg.task_id)
+
+            # Update completed requests in internal robot state
+            if completed_request is not None:
                 if robot.last_completed_request != completed_request:
                     if self.debug:
                         print(
@@ -510,6 +533,16 @@ class FleetManager(Node):
             data['replan'] = True
         else:
             data['replan'] = False
+        if (robot.state.mode.mode == RobotMode.MODE_ACTION_COMPLETED):
+            self.get_logger().info(
+                f'Robot [{robot_name} completed performing its action')
+            completed_cmd_id = 0
+            msg = self._make_mode_request(robot_name, completed_cmd_id,
+                                          RobotMode.MODE_IDLE)
+            # Mark action execution as finished
+            self.action_completed_pub.publish(msg)
+            # # Request for robot idle
+            self.mode_pub.publish(msg)
 
         return data
 
@@ -520,11 +553,6 @@ class FleetManager(Node):
 # ------------------------------------------------------------------------------
 # Main
 # ------------------------------------------------------------------------------
-def ros2_thread(node):
-    print('entering ros2 thread')
-    node.spin()
-    print('leaving ros2 thread')
-
 def main(argv=sys.argv):
     # Init rclpy and adapter
     rclpy.init(args=argv)
@@ -542,24 +570,15 @@ def main(argv=sys.argv):
         required=True,
         help='Path to the config.yaml file',
     )
-    parser.add_argument(
-        '-n',
-        '--nav_graph',
-        type=str,
-        required=True,
-        help='Path to the nav_graph for this fleet adapter',
-    )
     args = parser.parse_args(args_without_ros[1:])
     print('Starting fleet manager...')
 
     with open(args.config_file, 'r') as f:
         config = yaml.safe_load(f)
 
-    fleet_manager = FleetManager(config, args.nav_graph)
-    executor = MultiThreadedExecutor(num_threads=6)
-    executor.add_node(fleet_manager)    
+    fleet_manager = FleetManager(config)
 
-    spin_thread = threading.Thread(target=ros2_thread, args=(executor,))
+    spin_thread = threading.Thread(target=rclpy.spin, args=(fleet_manager,))
     spin_thread.start()
 
     uvicorn.run(

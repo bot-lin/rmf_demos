@@ -14,6 +14,7 @@
 
 import argparse
 import asyncio
+import faulthandler
 import math
 import sys
 import threading
@@ -35,6 +36,7 @@ from rmf_fleet_msgs.msg import ClosedLanes
 from rmf_fleet_msgs.msg import LaneRequest
 from rmf_fleet_msgs.msg import ModeRequest
 from rmf_fleet_msgs.msg import RobotMode
+from rmf_fleet_msgs.msg import SpeedLimitRequest
 import yaml
 
 from .RobotClientAPI import RobotAPI
@@ -46,6 +48,7 @@ from .RobotClientAPI import RobotUpdateData
 # Main
 # ------------------------------------------------------------------------------
 def main(argv=sys.argv):
+    faulthandler.enable()
     # Init rclpy and adapter
     rclpy.init(args=argv)
     rmf_adapter.init_rclcpp()
@@ -148,7 +151,7 @@ def main(argv=sys.argv):
             # Update all the robots in parallel using a thread pool
             update_jobs = []
             for robot in robots.values():
-                update_jobs.append(update_robot(robot, node))
+                update_jobs.append(update_robot(robot))
 
             asyncio.get_event_loop().run_until_complete(
                 asyncio.wait(update_jobs)
@@ -263,11 +266,6 @@ class RobotAdapter:
     def execute_action(self, category: str, description: dict, execution):
         self.cmd_id += 1
         self.execution = execution
-        self.node.get_logger().info(
-            "-----------fleet adapter execute action-----------")
-        self.node.get_logger().info(
-            f'Commanding [{self.name}] to execute action [{category}]'
-        )
 
         match category:
             case 'teleop':
@@ -279,9 +277,15 @@ class RobotAdapter:
                 self.attempt_cmd_until_success(
                     cmd=self.perform_clean, args=(description['zone'],)
                 )
-            case 'nest_action':
+            case 'delivery_pickup':
                 self.attempt_cmd_until_success(
-                    cmd=self.perform_nest_action, args=(description['action_id'],)
+                    cmd=self.api.toggle_attach, args=(
+                        self.name, True, self.cmd_id)
+                )
+            case 'delivery_dropoff':
+                self.attempt_cmd_until_success(
+                    cmd=self.api.toggle_attach, args=(
+                        self.name, False, self.cmd_id)
                 )
 
     def finish_action(self):
@@ -291,13 +295,14 @@ class RobotAdapter:
         if self.execution is not None:
             self.execution.finished()
             self.execution = None
-            self.attempt_cmd_until_success(
-                cmd=self.api.toggle_teleop, args=(self.name, False)
-            )
+            if self.teleoperation:
+                self.attempt_cmd_until_success(
+                    cmd=self.api.toggle_teleop, args=(self.name, False)
+                )
 
     def perform_docking(self, destination):
         match self.api.start_activity(
-            self.name, self.cmd_id, 'dock', destination.dock()
+            self.name, self.cmd_id, 'dock', destination.dock
         ):
             case (RobotAPIResult.SUCCESS, path):
                 self.override = self.execution.override_schedule(
@@ -316,26 +321,7 @@ class RobotAdapter:
                     destination.map,
                     destination.speed_limit,
                 )
-            
-    def perform_nest_action(self, action_id):
-        match self.api.start_activity(self.name, self.cmd_id, 'nest_action', action_id):
-            case (RobotAPIResult.SUCCESS, path):
-                self.node.get_logger().info(
-                    f'Commanding [{self.name}] to perform nest action [{action_id}]'
-                )
-                return True
-            case RobotAPIResult.RETRY:
-                self.node.get_logger().warn("need to retry nest action")
-                return False
-            case RobotAPIResult.IMPOSSIBLE:
-                self.node.get_logger().error(
-                    f'Fleet manager for [{self.name}] does not know how to '
-                    f'perform nest action [{action_id}]. We will terminate the activity.'
-                )
-                self.execution.finished()
-                self.execution = None
-                return True
-                
+
     def perform_clean(self, zone):
         match self.api.start_activity(self.name, self.cmd_id, 'clean', zone):
             case (RobotAPIResult.SUCCESS, path):
@@ -421,7 +407,7 @@ def parallel(f):
 
 
 @parallel
-def update_robot(robot: RobotAdapter, node):
+def update_robot(robot: RobotAdapter):
     data = robot.api.get_data(robot.name)
     if data is None:
         return
@@ -471,12 +457,25 @@ def ros_connections(node, robots, fleet_handle):
             closed_lanes.add(lane_idx)
 
         for lane_idx in msg.open_lanes:
-            closed_lanes.remove(lane_idx)
+            if lane_idx in closed_lanes:
+                closed_lanes.remove(lane_idx)
 
         state_msg = ClosedLanes()
         state_msg.fleet_name = fleet_name
         state_msg.closed_lanes = list(closed_lanes)
         closed_lanes_pub.publish(state_msg)
+
+    def speed_limit_request_cb(msg):
+        if msg.fleet_name is None or msg.fleet_name != fleet_name:
+            return
+
+        requests = []
+        for limit in msg.speed_limits:
+            request = rmf_adapter.fleet_update_handle.SpeedLimitRequest(
+                limit.lane_index, limit.speed_limit)
+            requests.append(request)
+        fleet_handle.more().limit_lane_speeds(requests)
+        fleet_handle.more().remove_speed_limits(msg.remove_limits)
 
     def mode_request_cb(msg):
         if (
@@ -499,6 +498,13 @@ def ros_connections(node, robots, fleet_handle):
         qos_profile=qos_profile_system_default,
     )
 
+    speed_limit_request_sub = node.create_subscription(
+        SpeedLimitRequest,
+        'speed_limit_requests',
+        speed_limit_request_cb,
+        qos_profile=qos_profile_system_default,
+    )
+
     action_execution_notice_sub = node.create_subscription(
         ModeRequest,
         'action_execution_notice',
@@ -508,6 +514,7 @@ def ros_connections(node, robots, fleet_handle):
 
     return [
         lane_request_sub,
+        speed_limit_request_sub,
         action_execution_notice_sub,
     ]
 
